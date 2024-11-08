@@ -1,0 +1,16 @@
+external_components:
+  - source: github://mikesmitty/esphome-components@main
+    components: [plaato_airlock]
+
+plaato_airlock:
+  - id: my_airlock
+    name: My Airlock
+
+sensor:
+  - platform: plaato_airlock
+    plaato_airlock: my_airlock
+    bubble_count:
+      name: "Airlock Bubble Count"
+    bubble_total:
+      name: "Airlock Bubble Total"
+    update_interval: 60s
