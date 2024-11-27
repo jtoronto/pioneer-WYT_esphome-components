@@ -108,8 +108,8 @@ enum class CmdMode : uint8_t {
 enum class FanSpeed : uint8_t {
   Auto = 0x00,
   Low = 0x01,
-  Medium = 0x02,
   MediumLow = 0x04,
+  Medium = 0x02,
   MediumHigh = 0x05,
   High = 0x03,
 };
@@ -117,10 +117,10 @@ enum class FanSpeed : uint8_t {
 enum class CmdFanSpeed : uint8_t {
   Auto = 0x00,
   Low = 0x02,
-  Medium = 0x03,
-  High = 0x05,
   MediumLow = 0x06,
+  Medium = 0x03,
   MediumHigh = 0x07,
+  High = 0x05,
 };
 
 enum class SleepMode : uint8_t {
