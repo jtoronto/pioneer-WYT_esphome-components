@@ -12,11 +12,21 @@ USB dongle pinout:
 
 Example config entry:
 ```yaml
+external_components:
+  - source: github://mikesmitty/esphome-components@main
+    components: [ pioneer ]
+
 climate:
   - platform: pioneer
     name: My Heatpump
     beeper: false # Feedback beep when commands are sent
     display: true # Show temperature on the LED display
+
+uart:
+  tx_pin: # Hardware-dependent
+  rx_pin: # Hardware-dependent
+  baud_rate: 9600
+  parity: EVEN
 ```
 
 Thanks to squidpickles' work to reverse engineer the communication protocol:  
