@@ -18,3 +18,7 @@ climate:
     beeper: false # Feedback beep when commands are sent
     display: true # Show temperature on the LED display
 ```
+
+Thanks to squidpickles' work to reverse engineer the communication protocol:  
+https://github.com/squidpickles/tuya-serial  
+https://github.com/squidpickles/pioneer-uart
