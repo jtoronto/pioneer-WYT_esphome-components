@@ -12,6 +12,11 @@ namespace wyt {
 static const char *const TAG = "pioneer.climate";
 
 void WytClimate::setup() {
+  this->prev_custom_fan_mode_.reset();
+  this->custom_fan_mode.reset();
+  this->prev_fan_mode_.reset();
+  this->fan_mode.reset();
+
   if (!this->query_state_()) {
     ESP_LOGE(TAG, "Status query timed out");
     return;
@@ -64,6 +69,7 @@ void WytClimate::update() {
   this->mode = this->get_mode();
   // this->action = this->get_action();  // FIXME: Implement this if possible
   this->fan_mode = this->get_fan_mode();
+  this->custom_fan_mode = this->get_custom_fan_mode();
   this->swing_mode = this->get_swing_mode();
   this->target_temperature = this->get_setpoint();
   this->current_temperature = this->get_temperature();
@@ -128,10 +134,10 @@ void WytClimate::control(const climate::ClimateCall &call) {
 
   if (call.get_mode().has_value())
     this->mode = *call.get_mode();
-  if (call.get_fan_mode().has_value() || call.get_custom_fan_mode().has_value()) {
+  if (call.get_fan_mode().has_value())
     this->fan_mode = *call.get_fan_mode();
+  if (call.get_custom_fan_mode().has_value())
     this->custom_fan_mode = *call.get_custom_fan_mode();
-  }
   if (call.get_swing_mode().has_value())
     this->swing_mode = *call.get_swing_mode();
   if (call.get_target_temperature().has_value()) {
@@ -159,7 +165,7 @@ climate::ClimateTraits WytClimate::traits() {
   traits.add_supported_fan_mode(climate::CLIMATE_FAN_MEDIUM);
   traits.add_supported_fan_mode(climate::CLIMATE_FAN_HIGH);
   traits.add_supported_fan_mode(climate::CLIMATE_FAN_QUIET);
-  traits.set_supported_custom_fan_modes({"Turbo", "Medium-Low", "Medium-High"});
+  traits.set_supported_custom_fan_modes({"Medium-Low", "Medium-High", "Turbo"});
 
   traits.add_supported_swing_mode(climate::CLIMATE_SWING_BOTH);
   traits.add_supported_swing_mode(climate::CLIMATE_SWING_HORIZONTAL);
@@ -270,8 +276,8 @@ void WytClimate::switch_to_fan_mode_(climate::ClimateFanMode fan_mode, bool publ
   }
 
   // Clear any custom fan modes, this is highlander rules
-  this->prev_custom_fan_mode_ = optional<std::string>();
-  this->custom_fan_mode = optional<std::string>();
+  this->prev_custom_fan_mode_.reset();
+  this->custom_fan_mode.reset();
 
   this->prev_fan_mode_ = this->get_fan_mode();
   this->fan_mode = fan_mode;
@@ -283,7 +289,7 @@ void WytClimate::switch_to_fan_mode_(climate::ClimateFanMode fan_mode, bool publ
 
 void WytClimate::switch_to_custom_fan_mode_(std::string custom_fan_mode, bool publish_state) {
   if (custom_fan_mode == this->prev_custom_fan_mode_) {
-    ESP_LOGI(TAG, "Already in target fan mode %s", custom_fan_mode);
+    ESP_LOGI(TAG, "Already in target custom fan mode %s", custom_fan_mode);
     return;
   }
 
@@ -302,8 +308,8 @@ void WytClimate::switch_to_custom_fan_mode_(std::string custom_fan_mode, bool pu
   }
 
   // Clear any fan modes, this is highlander rules
-  this->prev_fan_mode_ = optional<climate::ClimateFanMode>();
-  this->fan_mode = optional<climate::ClimateFanMode>();
+  this->prev_fan_mode_.reset();
+  this->fan_mode.reset();
 
   this->prev_custom_fan_mode_ = this->get_custom_fan_mode();
   this->custom_fan_mode = custom_fan_mode;
