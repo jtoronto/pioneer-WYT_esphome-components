@@ -10,6 +10,8 @@ USB dongle pinout:
 |D-|TX|White|
 |+5V|RX|Red|
 
+The dongle design can be found here: https://github.com/mikesmitty/electronics-projects/tree/main/wyt-dongle
+
 Example config entry:
 ```yaml
 external_components:
