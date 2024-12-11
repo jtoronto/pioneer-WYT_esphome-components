@@ -130,6 +130,11 @@ enum class SleepMode : uint8_t {
   Child = 0x03,
 };
 
+enum class VerticalFlow : uint8_t {
+  Off = 0x00,
+  On = 0x07,
+};
+
 enum class UpDownFlow : uint8_t {
   Auto = 0x00,
   TopFix = 0x01,
@@ -194,7 +199,8 @@ typedef union {
     // 07
     uint8_t unknown3 : 2;
     bool power : 1;
-    bool unknown2 : 2;
+    bool timer_enabled : 1;  // FIXME: Verify
+    bool unknown2 : 1;
     bool beeper : 1;
     bool display : 1;
     bool eco : 1;
@@ -208,13 +214,14 @@ typedef union {
     uint8_t set_temperature_whole;
     // 10
     CmdFanSpeed fan_speed : 3;
-    uint8_t vertical_flow : 3;
+    VerticalFlow vertical_flow : 3;
     bool unknown5 : 1;
     bool freeze_protection : 1;
     // 11
     uint8_t unknown7 : 2;
     bool set_temperature_half : 1;
-    uint8_t unknown6 : 5;
+    bool horizontal_flow : 1;
+    uint8_t unknown6 : 4;
     // 12..17
     uint8_t unknown8[6];
     // 18 Reduced output for use with a generator (0: 100%, 1: 30%, 2: 50%, 3: 80%)
@@ -234,7 +241,7 @@ typedef union {
   uint8_t bytes[WYT_STATE_COMMAND_SIZE];
 } SetCommand;
 
-// Holds a response from the WYT MCU describing its current operating state.
+/** Holds a response from the WYT MCU describing its current operating state. */
 typedef union {
   struct {
     // 00
@@ -353,20 +360,17 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
  protected:
   // The current state of the climate device
   uint8_t raw_state_[WYT_QUERY_RESPONSE_SIZE];
-  wyt::Response state_;
+  Response state_;
   bool enable_beeper_{false};
   bool enable_display_{true};
+
+  bool busy_{false};
 
   // The new command to send to the WYT MCU
   SetCommand command;
 
-  // climate::ClimateAction prev_action_; // FIXME: Implement this
-  optional<std::string> prev_custom_fan_mode_;
-  optional<climate::ClimateFanMode> prev_fan_mode_;
-  climate::ClimateMode prev_mode_;
-  climate::ClimateSwingMode prev_swing_mode_;
-  float prev_current_temperature_ = NAN;
-  float prev_target_temperature_ = NAN;
+  // Update the property if it has changed from previous and set the flag to true
+  template<typename T> void update_property_(T &property, const T &value, bool &flag);
 
   // Override control to change settings of the climate device.
   void control(const climate::ClimateCall &call) override;
@@ -375,19 +379,17 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
   climate::ClimateTraits traits() override;
 
   // Switch the climate device to the given climate action.
-  void switch_to_action_(climate::ClimateAction action, bool publish_state = true);
-  // void switch_to_supplemental_action_(climate::ClimateAction action);  // FIXME: Cleanup?
-  // void trigger_supplemental_action_();                                 // FIXME: Cleanup?
+  void switch_to_action_(climate::ClimateAction action);
 
   // Switch the climate device to the given climate fan mode.
-  void switch_to_fan_mode_(climate::ClimateFanMode fan_mode, bool publish_state = true);
-  void switch_to_custom_fan_mode_(std::string custom_fan_mode, bool publish_state = true);
+  void switch_to_fan_mode_(climate::ClimateFanMode fan_mode);
+  void switch_to_custom_fan_mode_(std::string custom_fan_mode);
 
   // Switch the climate device to the given climate mode.
-  void switch_to_mode_(climate::ClimateMode mode, bool publish_state = true);
+  void switch_to_mode_(climate::ClimateMode mode);
 
   // Switch the climate device to the given climate swing mode.
-  void switch_to_swing_mode_(climate::ClimateSwingMode swing_mode, bool publish_state = true);
+  void switch_to_swing_mode_(climate::ClimateSwingMode swing_mode);
 
   // Check if the temperature change trigger should be called.
   void switch_to_setpoint_temperature_();
