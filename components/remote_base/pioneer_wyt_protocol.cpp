@@ -6,25 +6,30 @@ namespace remote_base {
 
 static const char *const TAG = "remote.pioneer_wyt";
 
+/* Timing as measured. The matching spaces and ~15-25us smaller pulse periods might be due to
+ * rise time on the logic analyzer?
 constexpr uint32_t HEADER_MARK_US = 3075;
 constexpr uint32_t HEADER_SPACE_US = 1600;
 constexpr uint32_t BIT_MARK_US = 486;
 constexpr uint32_t BIT_ONE_SPACE_US = 1100;
 constexpr uint32_t BIT_ZERO_SPACE_US = 333;
-/*
+ */
+
+/* These timings are from the tcl112 component, but they're awfully close to what I measured.
+ * The protocols are pretty similar as well, probably related. Similar protocol to Mitsubishi
+ * also, but with different timing. */
 constexpr uint32_t HEADER_MARK_US = 3100;
 constexpr uint32_t HEADER_SPACE_US = 1650;
 constexpr uint32_t BIT_MARK_US = 500;
 constexpr uint32_t BIT_ONE_SPACE_US = 1100;
 constexpr uint32_t BIT_ZERO_SPACE_US = 350;
-*/
 
 constexpr unsigned int PIONEER_WYT_IR_PACKET_BIT_SIZE = 112;
 
 void PioneerWytProtocol::encode(RemoteTransmitData *dst, const PioneerWytData &data) {
   ESP_LOGI(TAG, "Transmit PioneerWyt: %s", format_hex_pretty(data.data).c_str());
-  dst->set_carrier_frequency(37850);  // FIXME: Cleanup?
-  // dst->set_carrier_frequency(38000);
+  // dst->set_carrier_frequency(37850);  // FIXME: Cleanup?
+  dst->set_carrier_frequency(38000);
   dst->reserve(5 + ((data.data.size() + 1) * 2));
   dst->mark(HEADER_MARK_US);
   dst->space(HEADER_SPACE_US);
