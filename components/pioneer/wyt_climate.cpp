@@ -140,7 +140,6 @@ void WytClimate::refresh() {
   this->switch_to_setpoint_temperature_();
 
   this->send_command(this->command);
-  // this->publish_state();
 }
 
 void WytClimate::validate_target_temperature() {
