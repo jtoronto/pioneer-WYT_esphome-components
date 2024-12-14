@@ -11,10 +11,12 @@ with zipfile.ZipFile(sys.argv[1], "r") as archive:
 HIGH = 0xFF
 LOW = 0xFD
 
+div = 24
 last = LOW
 count = 0
 i = 0
 j = 0
+k = 0
 msg = 0
 msg_bytes = []
 for b in data:
@@ -22,13 +24,13 @@ for b in data:
         count += 1
     elif count > 5000:
         if count > 30_000:
-            # print(f"discarding leader byte: {count}, {count/24:0.1f}us @ {i/24:0.1f}us")
+            # print(f"discarding leader byte: {count}, {count/div:0.1f}us @ {k/div:0.4f}ms")
             pass
         elif 10_000 < count < 20_000:
-            # print(f"discarding delimiter: {count}, {count/24:0.1f}us @ {i/24:0.1f}us")
+            # print(f"discarding delimiter: {count}, {count/div:0.1f}us @ {k/div:0.4f}us")
             pass
         else:
-            # print(f"count: {count}, {count/24:0.1f}us @ {i/24:0.1f}us")
+            # print(f"count: {count}, {count/div:0.1f}us @ {k/div:0.4f}us")
             bit = 0
             if count > 20_000:
                 bit = 1
@@ -46,6 +48,7 @@ for b in data:
     else:
         count = 1
         last = b
+    k += 1
 
 sum = 0x0F
 for i in range(0, len(msg_bytes)):

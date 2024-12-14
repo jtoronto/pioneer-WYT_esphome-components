@@ -12,6 +12,6 @@ fi
 
 # Monitor and timestamp the signals from the Pioneer remote control
 while true; do
-  sigrok-cli -d "$DRIVER" -C "$CHANNEL" -t "${CHANNEL}=e" -w --time 300 -c samplerate="24 MHz" -o "${FILENAME}.sr" && mv "${FILENAME}.sr" "${FILENAME}-$(date +%s).sr"
+  sigrok-cli -d "$DRIVER" -C "$CHANNEL" -t "${CHANNEL}=e" -w --time 400 -c samplerate="24 MHz" -o "${FILENAME}.sr" && mv "${FILENAME}.sr" "${FILENAME}-$(date +%s).sr"
   date
 done
