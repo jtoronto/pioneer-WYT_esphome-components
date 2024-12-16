@@ -1,6 +1,11 @@
 #include "wyt_climate.h"
 #include "esphome/core/log.h"
 
+#ifdef USE_REMOTE_TRANSMITTER
+#include "wyt_remote.h"
+#include "esphome/components/remote_base/pioneer_wyt_protocol.h"
+#endif
+
 #include <cfloat>
 #include <cmath>
 #include <stdint.h>
@@ -65,13 +70,10 @@ bool WytClimate::query_state_(bool read_only) {
 
   bool state_changed = false;                          // FIXME: Cleanup
   for (int i = 0; i < WYT_QUERY_RESPONSE_SIZE; i++) {  // FIXME: Copy the whole array at once later instead of looping
-    if (i != 30 && i != 36 && i != 37 && i != 38 && i != 45 && i != 46 && i != 60 &&
-        this->raw_state_[i] != buf_state_[i]) {
+    if (i != 18 && i != 30 && i != 34 && i != 35 && i != 36 && i != 37 && i != 38 && i != 39 && i != 45 && i != 46 &&
+        i != 60 && this->raw_state_[i] != buf_state_[i]) {
       ESP_LOGI(TAG, "State changed at %d: 0x%x -> 0x%x", i, this->raw_state_[i], buf_state_[i]);
       state_changed = true;
-      if (i == 35) {                                                                          // FIXME
-        ESP_LOGW(TAG, "Outdoor temp: %0.1f", static_cast<float>(this->raw_state_[35] - 20));  // FIXME
-      }
     }
     this->raw_state_[i] = buf_state_[i];
   }
@@ -87,11 +89,10 @@ bool WytClimate::query_state_(bool read_only) {
 
   this->state_ = response_from_bytes(this->raw_state_);
 
-  bool changed_action = false;
-  bool changed_temp = false;
-  this->update_property_(this->action, this->get_action(), changed_action);
-  this->update_property_(this->current_temperature, this->get_temperature(), changed_temp);
-  if (changed_action || changed_temp)
+  bool changed{false};
+  this->update_property_(this->action, this->get_action(), changed);
+  this->update_property_(this->current_temperature, this->get_temperature(), changed);
+  if (changed)
     this->publish_state();
 
   return true;
@@ -105,6 +106,27 @@ void WytClimate::update() {
 
   if (!this->query_state_())
     ESP_LOGE(TAG, "Status query timed out");
+
+  if (this->defrost_binary_sensor_ != nullptr) {
+    this->defrosting_ = this->is_defrosting();
+    this->defrost_binary_sensor_->publish_state(this->defrosting_);
+  }
+  if (this->indoor_fan_speed_sensor_ != nullptr && this->indoor_fan_speed_ != this->get_indoor_fan_speed()) {
+    this->indoor_fan_speed_ = this->get_indoor_fan_speed();
+    this->indoor_fan_speed_sensor_->publish_state(this->indoor_fan_speed_);
+  }
+  if (this->outdoor_fan_speed_sensor_ != nullptr && this->outdoor_fan_speed_ != this->get_outdoor_fan_speed()) {
+    this->outdoor_fan_speed_ = this->get_outdoor_fan_speed();
+    this->outdoor_fan_speed_sensor_->publish_state(this->outdoor_fan_speed_);
+  }
+  if (this->outdoor_sensor_ != nullptr && this->outdoor_temperature_ != this->get_outdoor_temperature()) {
+    this->outdoor_temperature_ = this->get_outdoor_temperature();
+    this->outdoor_sensor_->publish_state(this->outdoor_temperature_);
+  }
+  if (this->power_sensor_ != nullptr && this->power_usage_ != this->get_power_usage()) {
+    this->power_usage_ = this->get_power_usage();
+    this->power_sensor_->publish_state(this->get_power_usage());
+  }
 
   bool changed = false;
   this->update_property_(this->current_temperature, this->get_temperature(), changed);
@@ -233,7 +255,7 @@ void WytClimate::switch_to_fan_mode_(climate::ClimateFanMode fan_mode) {
   }
 
   this->command.mute = false;
-  this->command.strong = false;
+  this->command.turbo = false;
   switch (fan_mode) {
     case climate::CLIMATE_FAN_LOW:
       this->command.fan_speed = CmdFanSpeed::Low;
@@ -268,7 +290,7 @@ void WytClimate::switch_to_custom_fan_mode_(std::string custom_fan_mode) {
   }
 
   this->command.mute = false;
-  this->command.strong = false;
+  this->command.turbo = false;
   if (custom_fan_mode == "Medium-Low") {
     this->command.fan_speed = CmdFanSpeed::MediumLow;
   } else if (custom_fan_mode == "Medium-High") {
@@ -277,7 +299,7 @@ void WytClimate::switch_to_custom_fan_mode_(std::string custom_fan_mode) {
     // we cannot report an invalid mode back to HA (even if it asked for one)
     //  and must assume some valid value
     command.fan_speed = CmdFanSpeed::High;
-    this->command.strong = true;
+    this->command.turbo = true;
     custom_fan_mode = "Turbo";
   }
 
@@ -308,7 +330,7 @@ void WytClimate::switch_to_mode_(climate::ClimateMode mode) {
       this->command.mode = CmdMode::Fan;
       break;
     case climate::CLIMATE_MODE_DRY:
-      this->command.mode = CmdMode::Dehumidify;
+      this->command.mode = CmdMode::Dry;
       break;
     case climate::CLIMATE_MODE_AUTO:
     default:
@@ -394,18 +416,19 @@ SetCommand WytClimate::command_from_bytes(const uint8_t buffer[WYT_STATE_COMMAND
   return command;
 }
 
-SetCommand WytClimate::command_from_response(const Response &response) {
+SetCommand WytClimate::command_from_response(const StateResponse &response) {
   SetCommand command = {};
 
   Header header = this->new_header(Source::Controller, Dest::Appliance, Command::Set, 0x1d);
   command.header = header;
   command.eco = response.eco;
+  // command.display = this->state_.display; // FIXME: Use this instead of enable_display_
   command.display = this->enable_display_;
   command.beeper = this->enable_beeper_;
   command.gen_mode = 0x0;  // FIXME: Always disable gen_mode for now
   command.power = response.power;
   command.mute = response.mute;
-  command.strong = response.strong;
+  command.turbo = response.turbo;
   command.health = response.health;
   switch (response.mode) {
     case Mode::Auto:
@@ -414,8 +437,8 @@ SetCommand WytClimate::command_from_response(const Response &response) {
     case Mode::Cool:
       command.mode = CmdMode::Cool;
       break;
-    case Mode::Dehumidify:
-      command.mode = CmdMode::Dehumidify;
+    case Mode::Dry:
+      command.mode = CmdMode::Dry;
       break;
     case Mode::Fan:
       command.mode = CmdMode::Fan;
@@ -446,10 +469,15 @@ SetCommand WytClimate::command_from_response(const Response &response) {
       break;
   }
   this->set_temperature_(command, this->get_setpoint());
-  command.unknown8[0] = 0x80;
+  command.unknown9[0] = 0x80;
+  // command.unknown11[0-9] = 0x15;  // FIXME: This value is returned in byte 20+offset, no changes
   command.sleep = response.sleep;
+  // command.timer_enabled = response.timer_enabled; // FIXME
+  // command.timer_enabled = false;
+  // command.unknown9[1] = 0x05;  // FIXME: Testing if this is timer hours
+  // command.unknown9[2] = 0x30;  // FIXME: Testing if this is timer minutes
   command.horizontal_flow = response.horizontal_flow;
-  command.left_right_flow = static_cast<LeftRightFlow>(static_cast<uint8_t>(response.left_right_flow) + 0x80);
+  command.left_right_flow = static_cast<LeftRightFlow>(static_cast<uint8_t>(response.left_right_flow) | 0x80);
   command.up_down_flow = response.up_down_flow;
   command.vertical_flow = response.vertical_flow ? VerticalFlow::On : VerticalFlow::Off;
   command.checksum = checksum(command);
@@ -457,15 +485,15 @@ SetCommand WytClimate::command_from_response(const Response &response) {
 }
 
 void WytClimate::send_command(SetCommand &command) {
-  // Make sure left_right_flow has 0x80 added, but not more than once
-  command.left_right_flow = static_cast<LeftRightFlow>((static_cast<uint8_t>(command.left_right_flow) % 0x80) + 0x80);
+  command.left_right_flow = static_cast<LeftRightFlow>(static_cast<uint8_t>(command.left_right_flow) | 0x80);
   command.checksum = this->checksum(command);
+  ESP_LOGI(TAG, "Send: %s", format_hex_pretty(command.bytes, WYT_STATE_COMMAND_SIZE).c_str());
   this->write_array(command.bytes, WYT_STATE_COMMAND_SIZE);
   this->flush();
 }
 
-Response WytClimate::response_from_bytes(const uint8_t buffer[WYT_QUERY_RESPONSE_SIZE]) {
-  Response response = {};
+StateResponse WytClimate::response_from_bytes(const uint8_t buffer[WYT_QUERY_RESPONSE_SIZE]) {
+  StateResponse response = {};
   memcpy(response.bytes, buffer, WYT_QUERY_RESPONSE_SIZE);
   return response;
 }
@@ -482,27 +510,21 @@ uint8_t WytClimate::response_checksum(const uint8_t buffer[WYT_QUERY_RESPONSE_SI
 climate::ClimateAction WytClimate::get_action() {
   if (!this->state_.power)
     return climate::CLIMATE_ACTION_OFF;
-  if (this->state_.outdoor_fan_speed == 0 || this->state_.outdoor_unit_status != OutdoorStatus::Running) {
-    ESP_LOGD(TAG, "Outdoor fan: 0x%x Outdoor unit: 0x%x", this->state_.outdoor_fan_speed,
-             static_cast<uint8_t>(this->state_.outdoor_unit_status));
+  if (this->state_.outdoor_fan_speed == 0 || this->state_.outdoor_unit_status != OutdoorStatus::Running)
     return climate::CLIMATE_ACTION_IDLE;
+  switch (this->get_mode()) {
+    case climate::CLIMATE_MODE_HEAT:
+      return climate::CLIMATE_ACTION_HEATING;
+    case climate::CLIMATE_MODE_COOL:
+      return climate::CLIMATE_ACTION_COOLING;
+    case climate::CLIMATE_MODE_DRY:
+      return climate::CLIMATE_ACTION_DRYING;
+    case climate::CLIMATE_MODE_FAN_ONLY:
+      return climate::CLIMATE_ACTION_FAN;
+    default:
+      ESP_LOGE(TAG, "Unknown mode: %s", climate::climate_mode_to_string(this->get_mode()));
+      return climate::CLIMATE_ACTION_OFF;
   }
-  if (this->get_mode() == climate::CLIMATE_MODE_HEAT) {
-    if (!this->state_.heat_mode)
-      ESP_LOGW(TAG, "Heat mode not active. Defrosting?");
-    if (!this->state_.four_way_valve_on)
-      ESP_LOGW(TAG, "Four way valve off. Defrosting?");
-    return climate::CLIMATE_ACTION_HEATING;
-  }
-  if (this->get_mode() == climate::CLIMATE_MODE_COOL)
-    return climate::CLIMATE_ACTION_COOLING;
-  if (this->get_mode() == climate::CLIMATE_MODE_DRY)
-    return climate::CLIMATE_ACTION_DRYING;
-  if (this->get_mode() == climate::CLIMATE_MODE_FAN_ONLY)
-    return climate::CLIMATE_ACTION_FAN;
-
-  ESP_LOGE(TAG, "Unknown mode: %s", climate::climate_mode_to_string(this->get_mode()));
-  return climate::CLIMATE_ACTION_OFF;
 }
 
 climate::ClimateMode WytClimate::get_mode() {
@@ -513,13 +535,14 @@ climate::ClimateMode WytClimate::get_mode() {
       return climate::CLIMATE_MODE_AUTO;
     case Mode::Cool:
       return climate::CLIMATE_MODE_COOL;
-    case Mode::Dehumidify:
+    case Mode::Dry:
       return climate::CLIMATE_MODE_DRY;
     case Mode::Fan:
       return climate::CLIMATE_MODE_FAN_ONLY;
     case Mode::Heat:
       return climate::CLIMATE_MODE_HEAT;
     default:
+      ESP_LOGE(TAG, "Unknown mode: %d", this->state_.mode);
       return climate::CLIMATE_MODE_OFF;
   }
 }
@@ -531,7 +554,7 @@ optional<std::string> WytClimate::get_custom_fan_mode() {
     case FanSpeed::MediumHigh:
       return optional<std::string>("Medium-High");
     case FanSpeed::High:
-      if (this->state_.strong)
+      if (this->state_.turbo)
         return optional<std::string>("Turbo");
     default:
       return optional<std::string>();
@@ -569,7 +592,7 @@ climate::ClimateSwingMode WytClimate::get_swing_mode() {
 }
 
 float WytClimate::get_setpoint() {
-  return 16 + this->state_.set_temperature_whole + (this->state_.set_temperature_half ? 0.5 : 0);
+  return 16 + this->state_.setpoint_whole + (this->state_.setpoint_half_digit ? 0.5 : 0);
 }
 
 /*
@@ -589,8 +612,126 @@ void WytClimate::set_temperature_(SetCommand &command, const float temp_c) {
   uint8_t temp_double = round(temp_double_float);
   uint8_t temp_whole = temp_double / 2;
   bool temp_half = temp_double % 2;
-  command.set_temperature_whole = 0x6f - temp_whole;
-  command.set_temperature_half = temp_half;
+  command.setpoint_whole = 0x6f - temp_whole;
+  command.setpoint_half_digit = temp_half;
+}
+
+IrFanCommand WytClimate::get_fan_command_from_state() {
+  IrFanCommand command = {IrHeader{
+      WYT_REMOTE_HEADER_MAGIC[0],
+      WYT_REMOTE_HEADER_MAGIC[1],
+      WYT_REMOTE_HEADER_MAGIC[2],
+      uint8_t(IrCommandType::Fan),
+  }};
+
+  switch (this->state_.fan_speed) {
+    case FanSpeed::Low:
+      command.fan_speed = IrFanSpeed::Low;
+      break;
+    case FanSpeed::MediumLow:
+      command.fan_speed = IrFanSpeed::MediumLow;
+      break;
+    case FanSpeed::Medium:
+      command.fan_speed = IrFanSpeed::Medium;
+      break;
+    case FanSpeed::MediumHigh:
+      command.fan_speed = IrFanSpeed::MediumHigh;
+      break;
+    case FanSpeed::High:
+      command.fan_speed = IrFanSpeed::High;
+      break;
+    case FanSpeed::Auto:
+    default:
+      command.fan_speed = IrFanSpeed::Auto;
+  }
+  command.unknown2 = 1;
+  command.mute = this->state_.mute;  // AKA silent mode
+  command.horizontal_swing = this->state_.horizontal_flow ? IrSwing::On : IrSwing::Off;
+  command.vertical_swing = this->state_.vertical_flow ? IrSwing::On : IrSwing::Off;
+  return command;
+}
+
+IrGeneralCommand WytClimate::get_general_command_from_state() {
+  IrGeneralCommand command = {IrHeader{
+      WYT_REMOTE_HEADER_MAGIC[0],
+      WYT_REMOTE_HEADER_MAGIC[1],
+      WYT_REMOTE_HEADER_MAGIC[2],
+      uint8_t(IrCommandType::General),
+  }};
+
+  command.power = this->state_.power;
+  command.timer = this->state_.timer_enabled;
+  command.beeper = this->enable_beeper_;
+  command.disable_display = !this->state_.display;
+  command.eco = this->state_.eco;
+
+  switch (this->mode) {
+    case climate::CLIMATE_MODE_COOL:
+      command.mode = IrMode::Cool;
+      break;
+    case climate::CLIMATE_MODE_DRY:
+      command.mode = IrMode::Dry;
+      break;
+    case climate::CLIMATE_MODE_FAN_ONLY:
+      command.mode = IrMode::Fan;
+      break;
+    case climate::CLIMATE_MODE_HEAT:
+      command.mode = IrMode::Heat;
+      break;
+    case climate::CLIMATE_MODE_AUTO:
+    default:
+      command.mode = IrMode::Auto;
+  }
+
+  command.health = this->state_.health;
+  command.turbo = this->state_.turbo;
+  if (this->state_.turbo)
+    command.aux_mode = IrAuxMode::Turbo;
+  else if (this->state_.sleep != SleepMode::Off)
+    command.aux_mode = IrAuxMode::Sleep;
+  else if (this->mode == climate::CLIMATE_MODE_DRY)
+    command.aux_mode = IrAuxMode::Dry;
+
+  if (this->state_.up_down_flow == UpDownFlow::UpDownFlow)
+    command.up_down_flow = IrUpDownFlow::UpDownFlow;
+  if (this->state_.left_right_flow == LeftRightFlow::LeftRightFlow)
+    command.left_right_flow = IrLeftRightFlow::LeftRightFlow;
+
+  command.setpoint_whole_number = 31 - static_cast<uint8_t>(this->target_temperature);
+  command.setpoint_half_digit = this->state_.setpoint_half_digit;
+  return command;
+}
+
+void WytClimate::do_remote_temp(float temp_c, bool beeper) {
+#ifdef USE_REMOTE_TRANSMITTER
+  IrFanCommand fan_command = this->get_fan_command_from_state();
+  IrGeneralCommand general_command = this->get_general_command_from_state();
+
+  general_command.remote_temp = static_cast<uint8_t>(round(temp_c));
+  general_command.beeper = this->enable_beeper_ || beeper;
+
+  remote_base::PioneerWytData fan_data(
+      std::vector<uint8_t>(fan_command.bytes, fan_command.bytes + WYT_REMOTE_COMMAND_SIZE));
+  remote_base::PioneerWytData general_data(
+      std::vector<uint8_t>(general_command.bytes, general_command.bytes + WYT_REMOTE_COMMAND_SIZE));
+
+  // Transmit the fan command first (always required)
+  auto transmit = this->transmitter_->transmit();
+  remote_base::PioneerWytProtocol().encode(transmit.get_data(), fan_data);
+  transmit.perform();
+
+  // Pause for 70ms between first and second command
+  delay_microseconds_safe(70000);
+
+  // Transmit the general command
+  transmit = this->transmitter_->transmit();
+  remote_base::PioneerWytProtocol().encode(transmit.get_data(), general_data);
+  transmit.perform();
+
+  ESP_LOGD(TAG, "Remote temp action called with: %0.1f °C, rounded to: %u °C", temp_c, general_command.remote_temp);
+#else
+  ESP_LOGW(TAG, "Action needs remote_transmitter component");
+#endif
 }
 
 }  // namespace wyt

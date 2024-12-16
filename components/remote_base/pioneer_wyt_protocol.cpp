@@ -1,4 +1,5 @@
 #include "pioneer_wyt_protocol.h"
+
 #include "esphome/core/log.h"
 
 namespace esphome {
@@ -6,18 +7,9 @@ namespace remote_base {
 
 static const char *const TAG = "remote.pioneer_wyt";
 
-/* Timing as measured. The matching spaces and ~15-25us smaller pulse periods might be due to
- * rise time on the logic analyzer?
-constexpr uint32_t HEADER_MARK_US = 3075;
-constexpr uint32_t HEADER_SPACE_US = 1600;
-constexpr uint32_t BIT_MARK_US = 486;
-constexpr uint32_t BIT_ONE_SPACE_US = 1100;
-constexpr uint32_t BIT_ZERO_SPACE_US = 333;
- */
-
 /* These timings are from the tcl112 component, but they're awfully close to what I measured.
  * The protocols are pretty similar as well, probably related. Similar protocol to Mitsubishi
- * also, but with different timing. */
+ * also, though with different timing. */
 constexpr uint32_t HEADER_MARK_US = 3100;
 constexpr uint32_t HEADER_SPACE_US = 1650;
 constexpr uint32_t BIT_MARK_US = 500;
@@ -26,21 +18,30 @@ constexpr uint32_t BIT_ZERO_SPACE_US = 350;
 
 constexpr unsigned int PIONEER_WYT_IR_PACKET_BIT_SIZE = 112;
 
+uint8_t PioneerWytData::calc_cs_(uint8_t checksum_offset) const {
+  for (uint8_t i = 0; i < WYT_REMOTE_COMMAND_SIZE - 1; i++) {
+    checksum_offset += this->data_[i];
+  }
+  return checksum_offset;
+}
+
 void PioneerWytProtocol::encode(RemoteTransmitData *dst, const PioneerWytData &data) {
-  ESP_LOGI(TAG, "Transmit PioneerWyt: %s", format_hex_pretty(data.data).c_str());
-  // dst->set_carrier_frequency(37850);  // FIXME: Cleanup?
   dst->set_carrier_frequency(38000);
-  dst->reserve(5 + ((data.data.size() + 1) * 2));
+  dst->reserve(5 + ((data.size() + 1) * 2));
   dst->mark(HEADER_MARK_US);
   dst->space(HEADER_SPACE_US);
   dst->mark(BIT_MARK_US);
   uint8_t checksum = 0;
-  if (data.data[3] == 0x02)
+  // Fan mode messages are built different (have a checksum calculation)
+  if (data.type() == PioneerWytData::PIONEER_WYT_TYPE_FAN) {
     checksum = 0x0F;
-  for (uint8_t item : data.data) {
+  }
+  for (size_t i = 0; i < data.size() - 1; i++) {
+    uint8_t item = data[i];
     this->encode_byte_(dst, item);
     checksum += item;
   }
+  ESP_LOGI(TAG, "Transmit PioneerWyt: %s cs: %0X", data.to_string().c_str(), checksum);
   this->encode_byte_(dst, checksum);
 }
 
@@ -83,7 +84,6 @@ optional<PioneerWytData> PioneerWytProtocol::decode(RemoteReceiveData src) {
     }
     if (size > 0) {
       checksum += (data >> 4) + (data & 0xF);
-      out.data.push_back(data);
     } else if (checksum != data) {
       return {};
     }
@@ -92,7 +92,7 @@ optional<PioneerWytData> PioneerWytProtocol::decode(RemoteReceiveData src) {
 }
 
 void PioneerWytProtocol::dump(const PioneerWytData &data) {
-  ESP_LOGI(TAG, "Received PioneerWyt: %s", format_hex_pretty(data.data).c_str());
+  ESP_LOGI(TAG, "Received PioneerWyt: %s", data.to_string().c_str());
 }
 
 }  // namespace remote_base

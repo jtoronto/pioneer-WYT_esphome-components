@@ -1,13 +1,16 @@
 #pragma once
 
-// #include "wyt_command.h"
-// #include "wyt_response.h"
+// #ifdef USE_REMOTE_TRANSMITTER
+#include "wyt_remote.h"
+#include "esphome/components/remote_base/remote_base.h"
+// #endif
 
 #include "esphome/core/automation.h"
 #include "esphome/core/component.h"
 #include "esphome/components/uart/uart.h"
 #include "esphome/core/hal.h"
 #include "esphome/components/climate/climate.h"
+#include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/sensor/sensor.h"
 
 namespace esphome {
@@ -20,58 +23,6 @@ static const uint8_t WYT_HEADER_SIZE = 5;
 static const uint8_t WYT_QUERY_COMMAND_SIZE = 8;
 static const uint8_t WYT_QUERY_RESPONSE_SIZE = 61;
 static const uint8_t WYT_STATE_COMMAND_SIZE = 35;
-
-// FIXME: Cleanup
-// Cool: bb 00 01 03 1d 00 00 64 03 55 00 04 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 80 92
-// Heat: bb 00 01 03 1d 00 00 64 01 57 38 0c 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 88 a2
-// Dry:  bb 00 01 03 1d 00 00 64 02 55 02 04 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 80 91
-// Fan:  bb 00 01 03 1d 00 00 64 07 55 00 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 80 92
-// Auto: bb 00 01 03 1d 00 00 64 08 55 00 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 80 9d
-// Heat: bb 00 01 03 1d 00 00 64 01 57 38 08 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 88 a6
-// Temp change
-// ->76: bb 00 01 03 1d 00 00 64 01 57 38 0c 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 88 a2
-// ->77: bb 00 01 03 1d 00 00 64 01 56 38 08 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 88 a7
-// ->78: bb 00 01 03 1d 00 00 64 01 56 38 0c 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 88 a3
-// ->79: bb 00 01 03 1d 00 00 64 01 55 38 08 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 88 a4
-// ->80: bb 00 01 03 1d 00 00 64 01 55 38 0c 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 88 a0
-// Disable up/down flow
-//       bb 00 01 03 1d 00 00 64 01 57 00 0c 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 88 92
-// Enable up/down flow
-//       bb 00 01 03 1d 00 00 64 01 57 38 0c 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 88 a2
-// Disable left/right flow
-//       bb 00 01 03 1d 00 00 64 01 57 38 04 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 80 a2
-// Enable left/right flow
-//       bb 00 01 03 1d 00 00 64 01 57 38 0c 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 88 a2
-// Enable 8* Heater (Freeze Protection)
-//       bb 00 01 03 1d 00 00 64 01 5d b8 08 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 88 2c
-// Disable 8* Heater (Freeze Protection)
-//       bb 00 01 04 02 01 00 bd bb 00 01 03 1d 00 00 64 01 5d 38 08 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-//       00 00 00 08 88 ac
-//       bb 00 01 03 1d 00 00 64 01 5d 38 08 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 88 ac
-// Enable beeper
-//       bb 00 01 03 1d 00 00 64 01 5d 38 08 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 88 ac
-// Disable beeper
-//       bb 00 01 03 1d 00 00 44 01 5d 38 08 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 88 8c
-// Enable display
-//       bb 00 01 03 1d 00 00 44 01 57 38 0c 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 88 82
-// Disable display
-//       bb 00 01 03 1d 00 00 04 01 57 38 0c 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 88 c2
-// Fan - turbo
-//       bb 00 01 03 1d 00 00 44 41 57 3d 0c 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 88 c7
-// Fan - auto
-//       bb 00 01 03 1d 00 00 44 01 57 38 0c 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 08 88 82
-// Fan - mid-low
-//       bb 00 01 03 1d 00 00 24 01 56 3e 08 80 00 00 00 00 00 00 00 8c 3a ff 3f d1 1d 4a 93 ab 08 00 00 08 88 21
-// Fan - mute
-//       bb 00 01 03 1d 00 00 24 81 56 3a 08 80 00 00 00 00 00 00 00 8c 3a ff 3f d1 1d 4a 93 ab 08 00 00 08 88 a5
-// GEN mode - enable LV1
-//       bb 00 01 03 1d 00 00 6c 01 56 38 0a 80 00 ec 7c 00 00 01 00 0a 00 00 00 25 7e d5 24 3a 23 00 00 08 88 85
-// GEN mode - enable LV2
-//       bb 00 01 03 1d 00 00 6c 01 56 38 0a 80 00 ec 7c 00 00 02 00 0a 00 00 00 25 7e d5 24 3a 23 00 00 08 88 86
-// GEN mode - enable LV3
-//       bb 00 01 03 1d 00 00 6c 01 56 38 0a 80 00 ec 7b 00 00 03 00 0a 00 00 00 25 7e d5 24 3a 23 00 00 08 88 80
-// GEN mode - disable                                          ## Here
-//       bb 00 01 03 1d 00 00 6c 01 56 38 0a 80 00 ec 7b 00 00 00 00 0a 00 00 00 25 7e d5 24 3a 23 00 00 08 88 83
 
 enum class Source : uint8_t {
   Controller = 0x00,
@@ -91,7 +42,7 @@ enum class Command : uint8_t {
 enum class Mode : uint8_t {
   Cool = 0x01,
   Fan = 0x02,
-  Dehumidify = 0x03,
+  Dry = 0x03,
   Heat = 0x04,
   Auto = 0x05,
 };
@@ -99,7 +50,7 @@ enum class Mode : uint8_t {
 enum class CmdMode : uint8_t {
   Off = 0x00,
   Heat = 0x01,
-  Dehumidify = 0x02,
+  Dry = 0x02,
   Cool = 0x03,
   Fan = 0x07,
   Auto = 0x08,
@@ -160,13 +111,6 @@ enum class LeftRightFlow : uint8_t {
   RightFlow = 0x20,
 };
 
-enum class IndoorFanSpeed : uint8_t {
-  Off = 0x00,
-  Low = 0x3c,
-  Medium = 0x55,
-  High = 0x62,
-};
-
 enum class OutdoorStatus : uint8_t {
   Idle = 0x00,
   Running = 0x0a,
@@ -197,40 +141,40 @@ typedef union {
     // 05..06
     uint8_t unknown1[2];
     // 07
-    uint8_t unknown3 : 2;
+    uint8_t unknown2 : 2;
     bool power : 1;
-    bool timer_enabled : 1;  // FIXME: Verify
-    bool unknown2 : 1;
+    bool unknown3 : 2;
     bool beeper : 1;
     bool display : 1;
     bool eco : 1;
     // 08
     CmdMode mode : 4;
-    bool health : 1;
+    bool health : 1;  // FIXME: Verify
     bool unknown4 : 1;
-    bool strong : 1;
+    bool turbo : 1;
     bool mute : 1;
     // 09
-    uint8_t set_temperature_whole;
+    uint8_t setpoint_whole;
     // 10
     CmdFanSpeed fan_speed : 3;
     VerticalFlow vertical_flow : 3;
     bool unknown5 : 1;
     bool freeze_protection : 1;
     // 11
-    uint8_t unknown7 : 2;
-    bool set_temperature_half : 1;
+    uint8_t unknown6 : 2;
+    bool setpoint_half_digit : 1;
     bool horizontal_flow : 1;
-    uint8_t unknown6 : 4;
+    uint8_t unknown7 : 4;
+    // uint8_t unknown8 : 2;
     // 12..17
-    uint8_t unknown8[6];
+    uint8_t unknown9[6];
     // 18 Reduced output for use with a generator (0: 100%, 1: 30%, 2: 50%, 3: 80%)
     uint8_t gen_mode : 2;
-    uint8_t unknown9 : 6;
+    uint8_t unknown10 : 6;
     // 19
     SleepMode sleep;
     // 20..31
-    uint8_t unknown10[12];
+    uint8_t unknown11[12];
     // 32
     UpDownFlow up_down_flow;
     // 33
@@ -262,45 +206,51 @@ typedef union {
     bool power : 1;
     bool display : 1;
     bool eco : 1;
-    bool strong : 1;
+    bool turbo : 1;
     // 08
-    uint8_t set_temperature_whole : 4;
+    uint8_t setpoint_whole : 4;
     FanSpeed fan_speed : 3;
     bool unknown3 : 1;
     // 09
-    bool set_temperature_half : 1;
-    bool unknown7 : 1;
+    bool setpoint_half_digit : 1;
+    bool unknown4 : 1;
     bool health : 1;
-    uint8_t unknown6 : 5;
+    uint8_t unknown5 : 3;
+    bool timer_enabled : 1;
+    uint8_t unknown6 : 1;
     // 10
-    uint8_t unknown10 : 5;
+    uint8_t unknown7 : 5;
     bool horizontal_flow : 1;
     bool vertical_flow : 1;
-    bool unknown9 : 1;
-    // 11..16
-    uint8_t unknown11[6];
+    bool unknown8 : 1;
+    // 11
+    uint8_t timer_hours_remaining;
+    // 12
+    uint8_t timer_minutes_remaining;
+    // 13..16
+    uint8_t unknown9[4];
     // 17
     uint8_t indoor_temp_base;
     // 18
-    uint8_t unknown12;
+    uint8_t unknown10;
     // 19
     SleepMode sleep : 2;
-    uint8_t unknown13 : 5;
+    uint8_t unknown11 : 5;
     bool four_way_valve_on : 1;
     // 20..29
-    uint8_t unknown14[10];
+    uint8_t unknown12[10];
     // 30
     uint8_t indoor_heat_exchanger_temp;
     // 31
-    uint8_t unknown15;
+    uint8_t unknown13;
     // 32
-    uint8_t unknown16 : 7;
+    uint8_t unknown14 : 7;
     bool freeze_protection : 1;
     // 33
-    uint8_t unknown17 : 7;
+    uint8_t unknown15 : 7;
     bool mute : 1;
     // 34
-    IndoorFanSpeed indoor_fan_speed;
+    uint8_t indoor_fan_speed;
     // 35
     uint8_t outdoor_temp;
     // 36
@@ -313,11 +263,11 @@ typedef union {
     uint8_t outdoor_fan_speed;
     // 40
     OutdoorStatus outdoor_unit_status : 4;
-    uint8_t unknown19 : 2;
+    uint8_t unknown16 : 2;
     bool heat_mode : 1;
-    bool unknown18 : 1;
+    bool unknown17 : 1;
     // 41..44
-    uint8_t unknown20[4];
+    uint8_t unknown18[4];
     // 45
     uint8_t supply_voltage;
     // 46
@@ -325,16 +275,16 @@ typedef union {
     // 47
     uint8_t gen_mode;
     // 48..50
-    uint8_t unknown21[3];
+    uint8_t unknown19[3];
     // 51
     UpDownFlow up_down_flow;
     // 52
     LeftRightFlow left_right_flow;
     // 53..60
-    uint8_t unknown22[8];
+    uint8_t unknown20[8];
   } __attribute__((packed));
   uint8_t bytes[WYT_QUERY_RESPONSE_SIZE];
-} Response;
+} StateResponse;
 
 class WytClimate : public climate::Climate, public PollingComponent, public uart::UARTDevice {
  public:
@@ -342,10 +292,25 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
   void dump_config() override;
   void update() override;
 
-  // Call triggers based on updated climate states (modes/actions)
+  void set_defrost_binary_sensor(binary_sensor::BinarySensor *sensor) { this->defrost_binary_sensor_ = sensor; }
+  void set_indoor_fan_speed_sensor(sensor::Sensor *sensor) { this->indoor_fan_speed_sensor_ = sensor; }
+  void set_outdoor_fan_speed_sensor(sensor::Sensor *sensor) { this->outdoor_fan_speed_sensor_ = sensor; }
+  void set_outdoor_temperature_sensor(sensor::Sensor *sensor) { this->outdoor_sensor_ = sensor; }
+  void set_power_sensor(sensor::Sensor *sensor) { this->power_sensor_ = sensor; }
+#ifdef USE_REMOTE_TRANSMITTER
+  void set_transmitter(remote_base::RemoteTransmitterBase *transmitter) { this->transmitter_ = transmitter; }
+#endif
+
+  // Send commands based on updated climate settings
   void refresh();
   void validate_target_temperature();
 
+  bool is_busy() const { return this->busy_; }
+  bool is_defrosting() const {
+    if (this->state_.mode == Mode::Heat && !this->state_.heat_mode)
+      return true;
+    return false;
+  }
   climate::ClimateAction get_action();
   optional<std::string> get_custom_fan_mode();
   optional<climate::ClimateFanMode> get_fan_mode();
@@ -354,20 +319,60 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
   float get_setpoint();
   float get_temperature();
 
+  int get_indoor_fan_speed() const { return static_cast<int>(this->state_.indoor_fan_speed); }
+  int get_outdoor_fan_speed() const { return static_cast<int>(this->state_.outdoor_fan_speed); }
+  int get_outdoor_temperature() const { return static_cast<int>(this->state_.outdoor_temp) - 20; }
+  int get_power_usage() const { return this->state_.supply_voltage * this->state_.current_used_amps; }
+
+  /* ############### */
+  /* ### ACTIONS ### */
+  /* ############### */
+
+  void do_remote_temp(float temp_c, bool beeper = false);
+  void do_display_toggle() {
+    this->set_display(!this->enable_display_);
+    this->refresh();
+  }
+  void do_beeper_on() {
+    this->set_beeper(true);
+    this->refresh();
+  }
+  void do_beeper_off() {
+    this->set_beeper(false);
+    this->refresh();
+  }
+
+  // Get an IR command to override the internal temperature sensor with a remote sensor reading that better represents
+  // the room temperature. Referred to in the manual as "I Feel" or "Follow Me" mode.
+  // This command is generated based on the current state to avoid inadvertent settings changes.
+  IrFanCommand get_fan_command_from_state();
+  IrGeneralCommand get_general_command_from_state();
+
   void set_beeper(bool enable_beeper) { this->enable_beeper_ = enable_beeper; }
   void set_display(bool enable_display) { this->enable_display_ = enable_display; }
 
  protected:
   // The current state of the climate device
   uint8_t raw_state_[WYT_QUERY_RESPONSE_SIZE];
-  Response state_;
+  StateResponse state_;
   bool enable_beeper_{false};
   bool enable_display_{true};
 
   bool busy_{false};
 
+  // The current state of the extra sensors
+  bool defrosting_{false};
+  uint8_t indoor_fan_speed_{0};
+  uint8_t outdoor_fan_speed_{0};
+  int outdoor_temperature_{0};
+  int power_usage_{0};
+
   // The new command to send to the WYT MCU
   SetCommand command;
+
+#ifdef USE_REMOTE_TRANSMITTER
+  RemoteTransmitterBase *transmitter_{nullptr};
+#endif
 
   // Update the property if it has changed from previous and set the flag to true
   template<typename T> void update_property_(T &property, const T &value, bool &flag);
@@ -398,20 +403,23 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
   // Get the current state of the climate device
   bool query_state_(bool read_only = false);
 
-  Response response_from_bytes(const uint8_t buffer[WYT_QUERY_RESPONSE_SIZE]);
+  StateResponse response_from_bytes(const uint8_t buffer[WYT_QUERY_RESPONSE_SIZE]);
   uint8_t response_checksum(const uint8_t buffer[WYT_QUERY_RESPONSE_SIZE]);
 
   // Checksum message data with XOR
   uint8_t checksum(const SetCommand &command);
   Header new_header(const Source &source, const Dest &dest, const Command &command, const uint8_t size);
   SetCommand command_from_bytes(const uint8_t buffer[WYT_STATE_COMMAND_SIZE]);
-  SetCommand command_from_response(const Response &response);
+  SetCommand command_from_response(const StateResponse &response);
 
   // Send a command to the WYT MCU
   void send_command(SetCommand &command);
 
-  // The sensor used for getting the current temperature
-  sensor::Sensor *sensor_{nullptr};
+  binary_sensor::BinarySensor *defrost_binary_sensor_{nullptr};
+  sensor::Sensor *indoor_fan_speed_sensor_{nullptr};
+  sensor::Sensor *outdoor_fan_speed_sensor_{nullptr};
+  sensor::Sensor *outdoor_sensor_{nullptr};
+  sensor::Sensor *power_sensor_{nullptr};
 
   /* FIXME: Implement or cleanup
   // The set of standard preset configurations this thermostat supports (Eg. AWAY, ECO, etc)
