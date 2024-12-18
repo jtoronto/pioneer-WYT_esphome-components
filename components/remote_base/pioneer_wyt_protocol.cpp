@@ -32,7 +32,7 @@ void PioneerWytProtocol::encode(RemoteTransmitData *dst, const PioneerWytData &d
   dst->space(HEADER_SPACE_US);
   dst->mark(BIT_MARK_US);
   uint8_t checksum = 0;
-  // Fan mode messages are built different (have a checksum calculation)
+  // Fan mode messages are built different (have an offset added to their checksum calculation)
   if (data.type() == PioneerWytData::PIONEER_WYT_TYPE_FAN) {
     checksum = 0x0F;
   }
