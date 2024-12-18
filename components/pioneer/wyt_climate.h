@@ -306,11 +306,7 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
   void validate_target_temperature();
 
   bool is_busy() const { return this->busy_; }
-  bool is_defrosting() const {
-    if (this->state_.mode == Mode::Heat && !this->state_.heat_mode)
-      return true;
-    return false;
-  }
+  bool is_defrosting() const { return (this->state_.mode == Mode::Heat && !this->state_.heat_mode); }
   climate::ClimateAction get_action();
   optional<std::string> get_custom_fan_mode();
   optional<climate::ClimateFanMode> get_fan_mode();
@@ -376,6 +372,9 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
 
   // Update the property if it has changed from previous and set the flag to true
   template<typename T> void update_property_(T &property, const T &value, bool &flag);
+
+  // Update the ancillary sensors
+  void update_sensors_();
 
   // Override control to change settings of the climate device.
   void control(const climate::ClimateCall &call) override;

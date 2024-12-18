@@ -107,6 +107,31 @@ void WytClimate::update() {
   if (!this->query_state_())
     ESP_LOGE(TAG, "Status query timed out");
 
+  // Publish updates for the ancillary sensors
+  this->update_sensors_();
+
+  bool changed = false;
+  this->update_property_(this->current_temperature, this->get_temperature(), changed);
+  this->update_property_(this->target_temperature, this->get_setpoint(), changed);
+  this->update_property_(this->swing_mode, this->get_swing_mode(), changed);
+  this->update_property_(this->mode, this->get_mode(), changed);
+  this->update_property_(this->fan_mode, this->get_fan_mode(), changed);
+  this->update_property_(this->custom_fan_mode, this->get_custom_fan_mode(), changed);
+
+  if (changed) {
+    this->publish_state();
+  }
+}
+
+template<typename T> void WytClimate::update_property_(T &property, const T &value, bool &flag) {
+  if (property != value) {
+    property = value;
+    flag = true;
+  }
+}
+
+void WytClimate::update_sensors_() {
+  // FIXME: Add deduplicators
   if (this->defrost_binary_sensor_ != nullptr) {
     this->defrosting_ = this->is_defrosting();
     this->defrost_binary_sensor_->publish_state(this->defrosting_);
@@ -126,25 +151,6 @@ void WytClimate::update() {
   if (this->power_sensor_ != nullptr && this->power_usage_ != this->get_power_usage()) {
     this->power_usage_ = this->get_power_usage();
     this->power_sensor_->publish_state(this->get_power_usage());
-  }
-
-  bool changed = false;
-  this->update_property_(this->current_temperature, this->get_temperature(), changed);
-  this->update_property_(this->target_temperature, this->get_setpoint(), changed);
-  this->update_property_(this->swing_mode, this->get_swing_mode(), changed);
-  this->update_property_(this->mode, this->get_mode(), changed);
-  this->update_property_(this->fan_mode, this->get_fan_mode(), changed);
-  this->update_property_(this->custom_fan_mode, this->get_custom_fan_mode(), changed);
-
-  if (changed) {
-    this->publish_state();
-  }
-}
-
-template<typename T> void WytClimate::update_property_(T &property, const T &value, bool &flag) {
-  if (property != value) {
-    property = value;
-    flag = true;
   }
 }
 
