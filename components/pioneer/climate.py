@@ -23,7 +23,7 @@ from esphome.const import (
 
 CODEOWNERS = ["@mikesmitty"]
 DEPENDENCIES = ["climate", "uart"]
-AUTO_LOAD = ["sensor"]
+AUTO_LOAD = ["binary_sensor", "sensor"]
 
 CONF_DEFROST_STATUS = "defrost_status"
 CONF_INDOOR_FAN_SPEED = "indoor_fan_speed"
