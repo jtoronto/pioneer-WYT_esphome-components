@@ -20,11 +20,18 @@ k = 0
 msg = 0
 msg_bytes = []
 for b in data:
+    # Signals are ~3100us high, ~1650us low and a ~500us high delimiter, followed by a series of pulses consisting of
+    # either a ~350us or an ~1100us gap for 0 and 1 respectively, terminated by a ~500us delimiter
     if b == last:
+        # If the polarity doesn't swap increment the tick counter since last pulse edge
         count += 1
     elif count > 5000:
+        # The polarity flipped and it's been ~200us since the last pulse edge, so we're at the start of a delimiter
+        # We're only concerned with the unbroken length of signal low readings because those indicate either a 1 or 0
+        # by their length. In between, however, the 38kHz signal makes a lot of noise so we ignore the high/low
+        # transitions until they're after a gap of more than 200us
         if count > 30_000:
-            # print(f"discarding leader byte: {count}, {count/div:0.1f}us @ {k/div:0.4f}ms")
+            # print(f"discarding leader pulse: {count}, {count/div:0.1f}us @ {k/div:0.4f}ms")
             pass
         elif 10_000 < count < 20_000:
             # print(f"discarding delimiter: {count}, {count/div:0.1f}us @ {k/div:0.4f}us")
