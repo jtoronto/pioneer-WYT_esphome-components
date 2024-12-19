@@ -1,4 +1,4 @@
-// #ifdef USE_REMOTE_TRANSMITTER  // FIXME
+#ifdef USE_REMOTE_TRANSMITTER
 #pragma once
 
 #include "wyt_climate.h"
@@ -202,5 +202,4 @@ class IrTransmitter {
 }  // namespace wyt
 }  // namespace pioneer
 }  // namespace esphome
-
-// #endif // FIXME
+#endif

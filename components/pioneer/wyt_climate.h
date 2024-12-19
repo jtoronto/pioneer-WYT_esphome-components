@@ -1,10 +1,5 @@
 #pragma once
 
-// #ifdef USE_REMOTE_TRANSMITTER
-#include "wyt_remote.h"
-#include "esphome/components/remote_base/remote_base.h"
-// #endif
-
 #include "esphome/core/automation.h"
 #include "esphome/core/component.h"
 #include "esphome/components/uart/uart.h"
@@ -12,6 +7,11 @@
 #include "esphome/components/climate/climate.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/sensor/sensor.h"
+
+#ifdef USE_REMOTE_TRANSMITTER
+#include "wyt_remote.h"
+#include "esphome/components/remote_base/remote_base.h"
+#endif
 
 namespace esphome {
 namespace pioneer {
@@ -338,11 +338,13 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
     this->refresh();
   }
 
+#ifdef USE_REMOTE_TRANSMITTER
   // Get an IR command to override the internal temperature sensor with a remote sensor reading that better represents
   // the room temperature. Referred to in the manual as "I Feel" or "Follow Me" mode.
   // This command is generated based on the current state to avoid inadvertent settings changes.
   IrFanCommand get_fan_command_from_state();
   IrGeneralCommand get_general_command_from_state();
+#endif
 
   void set_beeper(bool enable_beeper) { this->enable_beeper_ = enable_beeper; }
   void set_display(bool enable_display) { this->enable_display_ = enable_display; }

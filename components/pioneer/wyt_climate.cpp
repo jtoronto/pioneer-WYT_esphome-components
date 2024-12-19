@@ -1,10 +1,10 @@
-#include "wyt_climate.h"
-#include "esphome/core/log.h"
-
 #ifdef USE_REMOTE_TRANSMITTER
 #include "wyt_remote.h"
 #include "esphome/components/remote_base/pioneer_wyt_protocol.h"
 #endif
+
+#include "wyt_climate.h"
+#include "esphome/core/log.h"
 
 #include <cfloat>
 #include <cmath>
@@ -622,6 +622,7 @@ void WytClimate::set_temperature_(SetCommand &command, const float temp_c) {
   command.setpoint_half_digit = temp_half;
 }
 
+#ifdef USE_REMOTE_TRANSMITTER
 IrFanCommand WytClimate::get_fan_command_from_state() {
   IrFanCommand command = {IrHeader{
       WYT_REMOTE_HEADER_MAGIC[0],
@@ -707,6 +708,7 @@ IrGeneralCommand WytClimate::get_general_command_from_state() {
   command.setpoint_half_digit = this->state_.setpoint_half_digit;
   return command;
 }
+#endif
 
 void WytClimate::do_remote_temp(float temp_c, bool beeper) {
 #ifdef USE_REMOTE_TRANSMITTER
