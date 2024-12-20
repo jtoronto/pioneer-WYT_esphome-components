@@ -36,11 +36,11 @@ void WytClimate::setup() {
 }
 
 bool WytClimate::query_state_(bool read_only) {
-  if (this->busy_) {
+  if (this->is_busy()) {
     ESP_LOGD(TAG, "Waiting on busy state to clear before querying");
     return true;
   }
-  this->busy_ = true;
+  this->busy_++;
 
   if (!read_only) {
     ESP_LOGV(TAG, "Sending query command");
@@ -50,20 +50,20 @@ bool WytClimate::query_state_(bool read_only) {
 
   static uint8_t buf_state_[WYT_QUERY_RESPONSE_SIZE];
   bool result = this->read_array(buf_state_, WYT_QUERY_RESPONSE_SIZE);
-  this->busy_ = false;
+  this->busy_--;
   if (!result)
     return false;
 
   if (buf_state_[0] != 0xBB) {
     ESP_LOGW(TAG, "Invalid response header: 0x%x", buf_state_[0]);
-    if (!this->busy_) {
-      this->busy_ = true;
+    if (!this->is_busy()) {
+      this->busy_++;
       // Clear the buffer
       uint8_t byte;
       while (this->available()) {
         this->read_byte(&byte);
       }
-      this->busy_ = false;
+      this->busy_--;
     }
     return false;
   }
@@ -99,8 +99,8 @@ bool WytClimate::query_state_(bool read_only) {
 }
 
 void WytClimate::update() {
-  if (this->busy_) {
-    ESP_LOGD(TAG, "Waiting on busy state to clear before updating");
+  if (this->is_busy()) {
+    ESP_LOGD(TAG, "Waiting on busy state to clear, %d cycles left", this->busy_--);
     return;
   }
 
@@ -496,6 +496,11 @@ void WytClimate::send_command(SetCommand &command) {
   ESP_LOGI(TAG, "Send: %s", format_hex_pretty(command.bytes, WYT_STATE_COMMAND_SIZE).c_str());
   this->write_array(command.bytes, WYT_STATE_COMMAND_SIZE);
   this->flush();
+  /*
+  Wait N cycles to publish state after sending a command to reduce flip-flopping in the UI
+  when changing multiple options in quick succession.
+  */
+  this->busy_ = this->command_delay_;
 }
 
 StateResponse WytClimate::response_from_bytes(const uint8_t buffer[WYT_QUERY_RESPONSE_SIZE]) {
