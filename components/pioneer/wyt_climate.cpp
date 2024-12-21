@@ -428,7 +428,6 @@ SetCommand WytClimate::command_from_response(const StateResponse &response) {
   Header header = this->new_header(Source::Controller, Dest::Appliance, Command::Set, 0x1d);
   command.header = header;
   command.eco = response.eco;
-  // command.display = this->state_.display; // FIXME: Use this instead of enable_display_
   command.display = this->enable_display_;
   command.beeper = this->enable_beeper_;
   command.gen_mode = 0x0;  // FIXME: Always disable gen_mode for now
@@ -674,7 +673,7 @@ IrGeneralCommand WytClimate::get_general_command_from_state() {
   command.power = this->state_.power;
   command.timer = this->state_.timer_enabled;
   command.beeper = this->enable_beeper_;
-  command.disable_display = !this->state_.display;
+  command.disable_display = !this->enable_display_;
   command.eco = this->state_.eco;
 
   switch (this->mode) {
