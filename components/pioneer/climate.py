@@ -1,6 +1,6 @@
 from esphome.core import coroutine
 from esphome import automation
-from esphome.components import binary_sensor, climate, sensor, uart, remote_transmitter
+from esphome.components import binary_sensor, climate, remote_transmitter, sensor, uart
 from esphome.components.remote_base import CONF_TRANSMITTER_ID
 import esphome.config_validation as cv
 import esphome.codegen as cg
@@ -39,9 +39,9 @@ WytClimate = pioneer_wyt_ns.class_(
 
 
 CONFIG_SCHEMA = cv.All(
-    climate.CLIMATE_SCHEMA.extend(
+    climate.climate_schema(WytClimate)
+    .extend(
         {
-            cv.GenerateID(): cv.declare_id(WytClimate),
             cv.Optional(CONF_BEEPER, default=False): cv.boolean,
             cv.Optional(CONF_DISPLAY, default=True): cv.boolean,
             cv.OnlyWith(CONF_TRANSMITTER_ID, "remote_transmitter"): cv.use_id(
@@ -167,10 +167,9 @@ async def beeper_off_to_code(var, config, args):
 
 
 async def to_code(config):
-    var = cg.new_Pvariable(config[CONF_ID])
+    var = await climate.new_climate(config)
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
-    await climate.register_climate(var, config)
     cg.add(var.set_beeper(config[CONF_BEEPER]))
     cg.add(var.set_display(config[CONF_DISPLAY]))
     if CONF_TRANSMITTER_ID in config:
