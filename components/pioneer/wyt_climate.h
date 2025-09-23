@@ -291,7 +291,7 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
   void setup() override;
   void dump_config() override;
   void update() override;
-
+  void set_pending_binary_sensor(esphome::binary_sensor::BinarySensor *sensor) { this->pending_binary_sensor_ = sensor;}
   void set_defrost_binary_sensor(binary_sensor::BinarySensor *sensor) { this->defrost_binary_sensor_ = sensor; }
   void set_indoor_fan_speed_sensor(sensor::Sensor *sensor) { this->indoor_fan_speed_sensor_ = sensor; }
   void set_outdoor_fan_speed_sensor(sensor::Sensor *sensor) { this->outdoor_fan_speed_sensor_ = sensor; }
