@@ -92,6 +92,19 @@ bool WytClimate::query_state_(bool read_only) {
   bool changed{false};
   this->update_property_(this->action, this->get_action(), changed);
   this->update_property_(this->current_temperature, this->get_temperature(), changed);
+
+  // Clear pending if state matches requested
+  if (this->pending_ &&
+      this->mode == this->get_mode() &&
+      this->fan_mode == this->get_fan_mode() &&
+      this->custom_fan_mode == this->get_custom_fan_mode() &&
+      this->swing_mode == this->get_swing_mode() &&
+      std::abs(this->target_temperature - this->get_setpoint()) < 0.1f) {
+    this->pending_ = false;
+    if (this->pending_binary_sensor_ != nullptr)
+      this->pending_binary_sensor_->publish_state(false);
+  }
+
   if (changed)
     this->publish_state();
 
@@ -196,6 +209,15 @@ void WytClimate::control(const climate::ClimateCall &call) {
   }
   */
 
+   bool changed = false;
+
+  // Save previous state for comparison
+  auto prev_mode = this->mode;
+  auto prev_fan_mode = this->fan_mode;
+  auto prev_custom_fan_mode = this->custom_fan_mode;
+  auto prev_swing_mode = this->swing_mode;
+  auto prev_target_temp = this->target_temperature;
+
   if (call.get_mode().has_value())
     this->mode = *call.get_mode();
   if (call.get_fan_mode().has_value()) {
@@ -211,6 +233,18 @@ void WytClimate::control(const climate::ClimateCall &call) {
   if (call.get_target_temperature().has_value()) {
     this->target_temperature = *call.get_target_temperature();
     validate_target_temperature();
+  }
+
+  // Optimistically publish state if anything changed
+  if (this->mode != prev_mode ||
+      this->fan_mode != prev_fan_mode ||
+      this->custom_fan_mode != prev_custom_fan_mode ||
+      this->swing_mode != prev_swing_mode ||
+      this->target_temperature != prev_target_temp) {
+    this->publish_state();
+    this->pending_ = true;
+    if (this->pending_binary_sensor_ != nullptr)
+      this->pending_binary_sensor_->publish_state(true);
   }
 
   // make any changes happen

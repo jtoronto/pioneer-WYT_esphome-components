@@ -307,6 +307,10 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
 
   bool is_busy() const { return this->busy_ > 0; }
   bool is_defrosting() const { return (this->state_.mode == Mode::Heat && !this->state_.heat_mode); }
+
+  bool pending_{false};
+  binary_sensor::BinarySensor *pending_binary_sensor_{nullptr};
+
   climate::ClimateAction get_action();
   optional<std::string> get_custom_fan_mode();
   optional<climate::ClimateFanMode> get_fan_mode();

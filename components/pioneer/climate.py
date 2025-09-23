@@ -29,6 +29,7 @@ CONF_DEFROST_STATUS = "defrost_status"
 CONF_INDOOR_FAN_SPEED = "indoor_fan_speed"
 CONF_OUTDOOR_FAN_SPEED = "outdoor_fan_speed"
 CONF_POWER_USAGE = "power_usage"
+CONF_PENDING = "pending"
 ICON_HVAC = "mdi:hvac"
 ICON_SNOWFLAKE_THERMOMETER = "mdi:snowflake-thermometer"
 
@@ -76,6 +77,10 @@ CONFIG_SCHEMA = cv.All(
                 accuracy_decimals=0,
                 device_class=DEVICE_CLASS_POWER,
                 state_class=STATE_CLASS_MEASUREMENT,
+            ),
+            cv.Optional(CONF_PENDING): binary_sensor.binary_sensor_schema(
+                icon="mdi:progress-clock",
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
         }
     )
@@ -191,3 +196,6 @@ async def to_code(config):
     if CONF_POWER_USAGE in config:
         sens = await sensor.new_sensor(config[CONF_POWER_USAGE])
         cg.add(var.set_power_sensor(sens))
+    if CONF_PENDING in config:
+        sens = await binary_sensor.new_binary_sensor(config[CONF_PENDING])
+        cg.add(var.set_pending_binary_sensor(sens))
