@@ -17,6 +17,7 @@ namespace wyt {
 static const char *const TAG = "pioneer.climate";
 
 void WytClimate::setup() {
+  ESP_LOGD(TAG, "WytClimate::setup() called.");
   this->custom_fan_mode.reset();
   this->fan_mode.reset();
 
