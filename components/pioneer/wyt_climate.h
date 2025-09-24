@@ -362,6 +362,8 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
 
   uint8_t busy_{0};
   uint8_t command_delay_{2};
+  uint8_t pending_timeout_{0};
+  static const uint8_t PENDING_TIMEOUT = 10; // 10 * 2s polling interval = 20s
 
   // The current state of the extra sensors
   bool defrosting_{false};

@@ -101,6 +101,7 @@ bool WytClimate::query_state_(bool read_only) {
       this->swing_mode == this->get_swing_mode() &&
       std::abs(this->target_temperature - this->get_setpoint()) < 0.1f) {
     this->pending_ = false;
+    this->pending_timeout_ = 0;
     if (this->pending_binary_sensor_ != nullptr)
       this->pending_binary_sensor_->publish_state(false);
   }
@@ -117,8 +118,29 @@ void WytClimate::update() {
     return;
   }
 
-  if (!this->query_state_())
-    ESP_LOGE(TAG, "Status query timed out");
+  bool query_successful = this->query_state_();
+  if (!query_successful) {
+    ESP_LOGE(TAG, "Status query timed out or failed.");
+  }
+
+  if (this->pending_) {
+    if (this->pending_timeout_ > 0) {
+      this->pending_timeout_--;
+      // If query failed and we are still pending, we don't want to update the UI from stale data.
+      // So, if query failed, we just decrement timeout and return.
+      if (!query_successful) {
+        return;
+      }
+    } else {
+      // Timeout reached!
+      ESP_LOGW(TAG, "State change confirmation timed out. The device may not have responded or applied the command.");
+      this->pending_ = false;
+      if (this->pending_binary_sensor_ != nullptr)
+        this->pending_binary_sensor_->publish_state(false);
+      // Now, we let the rest of update() run to refresh the UI with the last known (potentially stale) state.
+      // This is a compromise: it's not UNKNOWN, but it's the best we can do without a dedicated UNKNOWN state.
+    }
+  }
 
   // Publish updates for the ancillary sensors
   this->update_sensors_();
@@ -243,6 +265,7 @@ void WytClimate::control(const climate::ClimateCall &call) {
       this->target_temperature != prev_target_temp) {
     this->publish_state();
     this->pending_ = true;
+    this->pending_timeout_ = PENDING_TIMEOUT;
     if (this->pending_binary_sensor_ != nullptr)
       this->pending_binary_sensor_->publish_state(true);
   }
