@@ -100,14 +100,18 @@ bool WytClimate::query_state_(bool read_only) {
       this->custom_fan_mode == this->get_custom_fan_mode() &&
       this->swing_mode == this->get_swing_mode() &&
       std::abs(this->target_temperature - this->get_setpoint()) < 0.1f) {
+    ESP_LOGD(TAG, "State matches requested, clearing pending_ flag.");
     this->pending_ = false;
     this->pending_timeout_ = 0;
     if (this->pending_binary_sensor_ != nullptr)
       this->pending_binary_sensor_->publish_state(false);
   }
+  if (this->pending_) {
+    ESP_LOGD(TAG, "Pending_ is still true after query, device state not yet matching target.");
+  }
 
-  if (changed)
-    this->publish_state();
+  // if (changed)
+  //   this->publish_state();
 
   return true;
 }
@@ -153,8 +157,11 @@ void WytClimate::update() {
   this->update_property_(this->fan_mode, this->get_fan_mode(), changed);
   this->update_property_(this->custom_fan_mode, this->get_custom_fan_mode(), changed);
 
-  if (changed) {
+  if (changed && !this->pending_) {
+    ESP_LOGD(TAG, "Publishing actual state from device (not pending).");
     this->publish_state();
+  } else if (changed && this->pending_) {
+    ESP_LOGD(TAG, "Skipping publish_state() because changes detected but command is pending.");
   }
 }
 
@@ -264,6 +271,7 @@ void WytClimate::control(const climate::ClimateCall &call) {
       this->swing_mode != prev_swing_mode ||
       this->target_temperature != prev_target_temp) {
     this->publish_state();
+    ESP_LOGD(TAG, "Optimistically publishing state and setting pending_ to true.");
     this->pending_ = true;
     this->pending_timeout_ = PENDING_TIMEOUT;
     if (this->pending_binary_sensor_ != nullptr)
