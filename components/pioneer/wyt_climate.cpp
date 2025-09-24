@@ -20,6 +20,29 @@ void WytClimate::setup() {
   this->custom_fan_mode.reset();
   this->fan_mode.reset();
 
+  // --- Pioneer WYT handshake sequence ---
+  static const uint8_t HANDSHAKE_A[8] = {0xBB, 0x00, 0x01, 0x04, 0x02, 0x01, 0x00, 0xBD};
+  static const uint8_t HANDSHAKE_B[8] = {0xBB, 0x00, 0x0A, 0x03, 0x05, 0x00, 0x00, 0xB6};
+  static const uint8_t HANDSHAKE_C[8] = {0xBB, 0x00, 0x09, 0x02, 0x05, 0x00, 0xB4};
+
+  for (int i = 0; i < 3; i++) {
+    this->write_array(HANDSHAKE_A, 8);
+    this->flush();
+  }
+  for (int i = 0; i < 3; i++) {
+    this->write_array(HANDSHAKE_B, 8);
+    this->flush();
+  }
+  for (int i = 0; i < 3; i++) {
+    this->write_array(HANDSHAKE_C, 7);
+    this->flush();
+  }
+  for (int i = 0; i < 5; i++) {
+    this->write_array(HANDSHAKE_A, 8);
+    this->flush();
+  }
+  delay(500);  // 0.5 second pause
+
   if (!this->query_state_()) {
     ESP_LOGE(TAG, "Status query timed out");
     return;
