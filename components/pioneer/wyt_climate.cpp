@@ -149,6 +149,9 @@ void WytClimate::update() {
   // Publish updates for the ancillary sensors
   this->update_sensors_();
 
+  // Increment force publish counter
+  this->force_publish_counter_++;
+
   bool changed = false;
   this->update_property_(this->current_temperature, this->get_temperature(), changed);
   this->update_property_(this->target_temperature, this->get_setpoint(), changed);
@@ -160,8 +163,14 @@ void WytClimate::update() {
   if (changed && !this->pending_) {
     ESP_LOGD(TAG, "Publishing actual state from device (not pending).");
     this->publish_state();
+    this->force_publish_counter_ = 0; // Reset counter after a publish
   } else if (changed && this->pending_) {
     ESP_LOGD(TAG, "Skipping publish_state() because changes detected but command is pending.");
+  } else if (!changed && !this->pending_ && this->force_publish_counter_ >= FORCE_PUBLISH_INTERVAL) {
+    // Force publish if no changes, not pending, and interval reached
+    ESP_LOGD(TAG, "Force publishing state (no changes, not pending, interval reached).");
+    this->publish_state();
+    this->force_publish_counter_ = 0; // Reset counter after a publish
   }
 }
 

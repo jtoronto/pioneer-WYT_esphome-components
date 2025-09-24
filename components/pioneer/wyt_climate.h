@@ -429,6 +429,9 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
   sensor::Sensor *outdoor_sensor_{nullptr};
   sensor::Sensor *power_sensor_{nullptr};
 
+  uint8_t force_publish_counter_{0};
+  static const uint8_t FORCE_PUBLISH_INTERVAL = 30; // 30 * 2s = 60s
+
   /* FIXME: Implement or cleanup
   // The set of standard preset configurations this thermostat supports (Eg. AWAY, ECO, etc)
   std::map<climate::ClimatePreset, WytClimateTargetTempConfig> preset_config_{};
