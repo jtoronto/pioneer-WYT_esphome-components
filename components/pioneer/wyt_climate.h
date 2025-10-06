@@ -362,6 +362,8 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
 
   uint8_t busy_{0};
   uint8_t command_delay_{2};
+  uint8_t pending_timeout_{0};
+  static const uint8_t PENDING_TIMEOUT = 10; // 10 * 2s polling interval = 20s
 
   // The current state of the extra sensors
   bool defrosting_{false};
@@ -426,6 +428,9 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
   sensor::Sensor *outdoor_fan_speed_sensor_{nullptr};
   sensor::Sensor *outdoor_sensor_{nullptr};
   sensor::Sensor *power_sensor_{nullptr};
+
+  uint8_t force_publish_counter_{0};
+  static const uint8_t FORCE_PUBLISH_INTERVAL = 30; // 30 * 2s = 60s
 
   /* FIXME: Implement or cleanup
   // The set of standard preset configurations this thermostat supports (Eg. AWAY, ECO, etc)

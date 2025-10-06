@@ -17,6 +17,7 @@ namespace wyt {
 static const char *const TAG = "pioneer.climate";
 
 void WytClimate::setup() {
+  ESP_LOGD(TAG, "WytClimate::setup() called.");
   this->custom_fan_mode.reset();
   this->fan_mode.reset();
 
@@ -123,13 +124,18 @@ bool WytClimate::query_state_(bool read_only) {
       this->custom_fan_mode == this->get_custom_fan_mode() &&
       this->swing_mode == this->get_swing_mode() &&
       std::abs(this->target_temperature - this->get_setpoint()) < 0.1f) {
+    ESP_LOGD(TAG, "State matches requested, clearing pending_ flag.");
     this->pending_ = false;
+    this->pending_timeout_ = 0;
     if (this->pending_binary_sensor_ != nullptr)
       this->pending_binary_sensor_->publish_state(false);
   }
+  if (this->pending_) {
+    ESP_LOGD(TAG, "Pending_ is still true after query, device state not yet matching target.");
+  }
 
-  if (changed)
-    this->publish_state();
+  // if (changed)
+  //   this->publish_state();
 
   return true;
 }
@@ -140,11 +146,35 @@ void WytClimate::update() {
     return;
   }
 
-  if (!this->query_state_())
-    ESP_LOGE(TAG, "Status query timed out");
+  bool query_successful = this->query_state_();
+  if (!query_successful) {
+    ESP_LOGE(TAG, "Status query timed out or failed.");
+  }
+
+  if (this->pending_) {
+    if (this->pending_timeout_ > 0) {
+      this->pending_timeout_--;
+      // If query failed and we are still pending, we don't want to update the UI from stale data.
+      // So, if query failed, we just decrement timeout and return.
+      if (!query_successful) {
+        return;
+      }
+    } else {
+      // Timeout reached!
+      ESP_LOGW(TAG, "State change confirmation timed out. The device may not have responded or applied the command.");
+      this->pending_ = false;
+      if (this->pending_binary_sensor_ != nullptr)
+        this->pending_binary_sensor_->publish_state(false);
+      // Now, we let the rest of update() run to refresh the UI with the last known (potentially stale) state.
+      // This is a compromise: it's not UNKNOWN, but it's the best we can do without a dedicated UNKNOWN state.
+    }
+  }
 
   // Publish updates for the ancillary sensors
   this->update_sensors_();
+
+  // Increment force publish counter
+  this->force_publish_counter_++;
 
   bool changed = false;
   this->update_property_(this->current_temperature, this->get_temperature(), changed);
@@ -154,8 +184,17 @@ void WytClimate::update() {
   this->update_property_(this->fan_mode, this->get_fan_mode(), changed);
   this->update_property_(this->custom_fan_mode, this->get_custom_fan_mode(), changed);
 
-  if (changed) {
+  if (changed && !this->pending_) {
+    ESP_LOGD(TAG, "Publishing actual state from device (not pending).");
     this->publish_state();
+    this->force_publish_counter_ = 0; // Reset counter after a publish
+  } else if (changed && this->pending_) {
+    ESP_LOGD(TAG, "Skipping publish_state() because changes detected but command is pending.");
+  } else if (!changed && !this->pending_ && this->force_publish_counter_ >= FORCE_PUBLISH_INTERVAL) {
+    // Force publish if no changes, not pending, and interval reached
+    ESP_LOGD(TAG, "Force publishing state (no changes, not pending, interval reached).");
+    this->publish_state();
+    this->force_publish_counter_ = 0; // Reset counter after a publish
   }
 }
 
@@ -265,7 +304,9 @@ void WytClimate::control(const climate::ClimateCall &call) {
       this->swing_mode != prev_swing_mode ||
       this->target_temperature != prev_target_temp) {
     this->publish_state();
+    ESP_LOGD(TAG, "Optimistically publishing state and setting pending_ to true.");
     this->pending_ = true;
+    this->pending_timeout_ = PENDING_TIMEOUT;
     if (this->pending_binary_sensor_ != nullptr)
       this->pending_binary_sensor_->publish_state(true);
   }
