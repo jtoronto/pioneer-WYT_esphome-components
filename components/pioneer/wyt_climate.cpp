@@ -32,7 +32,9 @@ void WytClimate::setup() {
   this->fan_mode = this->get_fan_mode();
   this->custom_fan_mode = this->get_custom_fan_mode();
   this->swing_mode = this->get_swing_mode();
-  this->target_temperature = this->get_setpoint();
+  if (this->state_.power) {
+    this->target_temperature = this->get_setpoint();
+  }
   this->current_temperature = this->get_temperature();
 }
 
@@ -103,9 +105,16 @@ bool WytClimate::query_state_(bool read_only) {
       std::abs(this->target_temperature - this->get_setpoint()) < 0.1f) {
     ESP_LOGD(TAG, "State matches requested, clearing pending_ flag.");
     this->pending_ = false;
+    this->force_publish_counter_ = 0; // Reset counter to prevent state bounce
     this->pending_timeout_ = 0;
     if (this->pending_binary_sensor_ != nullptr)
       this->pending_binary_sensor_->publish_state(false);
+
+    // If we were pending a mode change and the target temp was nan, adopt the device's setpoint
+    if (std::isnan(this->target_temperature)) {
+      ESP_LOGD(TAG, "Adopting device setpoint after mode change: %.1f", this->get_setpoint());
+      this->target_temperature = this->get_setpoint();
+    }
   }
   if (this->pending_) {
     ESP_LOGD(TAG, "Pending_ is still true after query, device state not yet matching target.");
@@ -155,7 +164,9 @@ void WytClimate::update() {
 
   bool changed = false;
   this->update_property_(this->current_temperature, this->get_temperature(), changed);
-  this->update_property_(this->target_temperature, this->get_setpoint(), changed);
+  if (this->state_.power) { // Only update target temp if the unit is on
+    this->update_property_(this->target_temperature, this->get_setpoint(), changed);
+  }
   this->update_property_(this->swing_mode, this->get_swing_mode(), changed);
   this->update_property_(this->mode, this->get_mode(), changed);
   this->update_property_(this->fan_mode, this->get_fan_mode(), changed);
@@ -217,7 +228,9 @@ void WytClimate::refresh() {
     this->switch_to_custom_fan_mode_(this->custom_fan_mode.value());
   this->switch_to_swing_mode_(this->swing_mode);
   this->validate_target_temperature();
-  this->switch_to_setpoint_temperature_();
+  if (this->command.power && !std::isnan(this->target_temperature)) {
+    this->switch_to_setpoint_temperature_();
+  }
 
   this->send_command(this->command);
 }
@@ -466,10 +479,12 @@ void WytClimate::switch_to_setpoint_temperature_() {
   if (this->target_temperature == this->get_setpoint()) {
     ESP_LOGD(TAG, "Already set to target temperature %.1f", this->target_temperature);
     return;
+  } else if (this->mode == climate::CLIMATE_MODE_OFF) {
+    ESP_LOGD(TAG, "Unit is off, skipping temperature change");
+    return;
   }
   this->set_temperature_(command, this->target_temperature);
 }
-
 void WytClimate::dump_config() { LOG_CLIMATE("", "WytClimate", this); }
 
 uint8_t WytClimate::checksum(const SetCommand &command) {
