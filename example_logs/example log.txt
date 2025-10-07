@@ -1,0 +1,347 @@
+Need help? Check out the migration guide:
+https://esphome.io/guides/esp32_arduino_to_idf.html
+INFO Starting log output from 192.168.1.194 using esphome API
+INFO Successfully resolved livingroomminisplit @ 192.168.1.194 in 0.000s
+INFO Successfully connected to livingroomminisplit @ 192.168.1.194 in 0.104s
+INFO Successful handshake with livingroomminisplit @ 192.168.1.194 in 0.008s
+[11:14:02][I][app:200]: ESPHome version 2025.8.3 compiled on Sep 22 2025, 10:09:32
+[11:14:02][C][wifi:661]: WiFi:
+[11:14:02][C][wifi:444]:   Local MAC: A8:03:2A:EA:A7:DC
+[11:14:02][C][wifi:449]:   SSID: 'NERV24'[redacted]
+[11:14:02][C][wifi:452]:   IP Address: 192.168.1.194
+[11:14:02][C][wifi:456]:   BSSID: A0:36:BC:19:7E:A8[redacted]
+[11:14:02][C][wifi:456]:   Hostname: 'livingroomminisplit'
+[11:14:02][C][wifi:456]:   Signal strength: -39 dB ▂▄▆█
+[11:14:02][C][wifi:467]:   Channel: 3
+[11:14:02][C][wifi:467]:   Subnet: 255.255.255.0
+[11:14:02][C][wifi:467]:   Gateway: 192.168.1.1
+[11:14:02][C][wifi:467]:   DNS1: 0.0.0.0
+[11:14:02][C][wifi:467]:   DNS2: 0.0.0.0
+[11:14:02][C][logger:252]: Logger:
+[11:14:02][C][logger:252]:   Max Level: DEBUG
+[11:14:02][C][logger:252]:   Initial Level: DEBUG
+[11:14:02][C][logger:258]:   Log Baud Rate: 0
+[11:14:02][C][logger:258]:   Hardware UART: UART0
+[11:14:02][C][logger:265]:   Task Log Buffer Size: 768
+[11:14:02][C][uart.arduino_esp32:150]: UART Bus 0:
+[11:14:02][C][uart.arduino_esp32:151]:   TX Pin: GPIO17
+[11:14:02][C][uart.arduino_esp32:152]:   RX Pin: GPIO16
+[11:14:02][C][uart.arduino_esp32:154]:   RX Buffer Size: 256
+[11:14:02][C][uart.arduino_esp32:156]:   Baud Rate: 9600 baud
+[11:14:02][C][uart.arduino_esp32:156]:   Data Bits: 8
+[11:14:02][C][uart.arduino_esp32:156]:   Parity: EVEN
+[11:14:02][C][uart.arduino_esp32:156]:   Stop bits: 1
+[11:14:02][C][uptime.sensor:032]: Uptime Sensor 'Living Room AC uptime'
+[11:14:02][C][uptime.sensor:032]:   State Class: 'total_increasing'
+[11:14:02][C][uptime.sensor:032]:   Unit of Measurement: 's'
+[11:14:02][C][uptime.sensor:032]:   Accuracy Decimals: 0
+[11:14:02][C][uptime.sensor:032]:   Device Class: 'duration'
+[11:14:02][C][uptime.sensor:032]:   Icon: 'mdi:timer-outline'
+[11:14:02][C][uptime.sensor:033]:   Type: Seconds
+[11:14:03][C][pioneer.climate:398]: WytClimate 'Living Room Mini-Split'
+[11:14:03][C][remote_transmitter:019]: Remote Transmitter:
+[11:14:03][C][remote_transmitter:020]:   Clock resolution: 1000000 hz
+[11:14:03][C][remote_transmitter:020]:   RMT symbols: 64
+[11:14:03][C][remote_transmitter:024]:   Pin: GPIO14
+[11:14:03][C][remote_transmitter:027]:     Carrier Duty: 50%
+[11:14:03][C][captive_portal:099]: Captive Portal:
+[11:14:03][C][web_server:309]: Web Server:
+[11:14:03][C][web_server:309]:   Address: 192.168.1.194:80
+[11:14:03][C][esphome.ota:075]: Over-The-Air updates:
+[11:14:03][C][esphome.ota:075]:   Address: 192.168.1.194:3232
+[11:14:03][C][esphome.ota:075]:   Version: 2
+[11:14:03][C][safe_mode:018]: Safe Mode:
+[11:14:03][C][safe_mode:019]:   Boot considered successful after 60 seconds
+[11:14:03][C][safe_mode:019]:   Invoke after 10 boot attempts
+[11:14:03][C][safe_mode:019]:   Remain for 300 seconds
+[11:14:03][C][web_server.ota:224]: Web Server OTA
+[11:14:03][C][api:205]: Server:
+[11:14:03][C][api:205]:   Address: 192.168.1.194:6053
+[11:14:03][C][api:215]:   Noise encryption: NO
+[11:14:03][C][homeassistant.binary_sensor:039]: Homeassistant Binary Sensor 'living_room_ac_remote_sensor_enable'
+[11:14:03][C][homeassistant.binary_sensor:040]:   Entity ID: 'input_boolean.living_room_a_c_remote_sensor_enable'
+[11:14:03][C][wifi_signal.sensor:010]: WiFi Signal 'Living Room AC wifi signal'
+[11:14:03][C][wifi_signal.sensor:010]:   State Class: 'measurement'
+[11:14:03][C][wifi_signal.sensor:010]:   Unit of Measurement: 'dBm'
+[11:14:03][C][wifi_signal.sensor:010]:   Accuracy Decimals: 0
+[11:14:03][C][wifi_signal.sensor:010]:   Device Class: 'signal_strength'
+[11:14:03][C][mdns:124]: mDNS:
+[11:14:03][C][mdns:124]:   Hostname: livingroomminisplit
+[11:14:03][C][homeassistant.sensor:030]: Homeassistant Sensor 'Living Room Temperature Sensor'
+[11:14:03][C][homeassistant.sensor:030]:   State Class: ''
+[11:14:03][C][homeassistant.sensor:030]:   Unit of Measurement: ''
+[11:14:03][C][homeassistant.sensor:030]:   Accuracy Decimals: 1
+[11:14:03][C][homeassistant.sensor:031]:   Entity ID: 'sensor.living_room_sensor_temperature'
+[11:14:12][D][climate:011]: 'Living Room Mini-Split' - Setting
+[11:14:12][D][climate:015]:   Mode: FAN_ONLY
+[11:14:12][I][pioneer.climate:251]: Already showing target action OFF
+[11:14:12][I][pioneer.climate:259]: Already in target fan mode AUTO
+[11:14:12][I][pioneer.climate:354]: Already in target swing mode OFF
+[11:14:12][D][pioneer.climate:392]: Already set to target temperature 24.0
+[11:14:12][I][pioneer.climate:495]: Send: BB.00.01.03.1D.00.00.44.07.57.00.00.80.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.80.B0 (35)
+[11:14:12][W][component:423]: api took a long time for an operation (54 ms)
+[11:14:12][W][component:424]: Components should block for at most 30 ms
+[11:14:12][D][pioneer.climate:103]: Waiting on busy state to clear, 2 cycles left
+[11:14:14][D][pioneer.climate:103]: Waiting on busy state to clear, 1 cycles left
+[11:14:16][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[11:14:16][D][climate:399]:   Mode: OFF
+[11:14:16][D][climate:401]:   Action: OFF
+[11:14:16][D][climate:404]:   Fan Mode: AUTO
+[11:14:16][D][climate:416]:   Swing Mode: OFF
+[11:14:16][D][climate:419]:   Current Temperature: 24.80°C
+[11:14:16][D][climate:425]:   Target Temperature: 24.00°C
+[11:14:17][D][homeassistant.sensor:024]: 'sensor.living_room_sensor_temperature': Got state 76.82
+[11:14:24][I][pioneer.climate:075]: State changed at 3: 0x4 -> 0x3
+[11:14:24][I][pioneer.climate:075]: State changed at 7: 0x20 -> 0x32
+[11:14:24][I][pioneer.climate:081]: Response: BB.01.00.03.37.04.00.32.88.00.80.00.00.00.00.00.00.70.2B.08.00.00.00.00.00.00.00.00.00.00.75.FF.42.00.00.32.30.30.00.00.80.00.00.00.00.EF.00.00.00.04.40.00.00.00.00.7A.00.00.00.00.48 (61)
+[11:14:24][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[11:14:24][D][climate:399]:   Mode: OFF
+[11:14:24][D][climate:401]:   Action: IDLE
+[11:14:24][D][climate:404]:   Fan Mode: AUTO
+[11:14:24][D][climate:416]:   Swing Mode: OFF
+[11:14:24][D][climate:419]:   Current Temperature: 24.80°C
+[11:14:24][D][climate:425]:   Target Temperature: 24.00°C
+[11:14:24][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[11:14:24][D][climate:399]:   Mode: FAN_ONLY
+[11:14:24][D][climate:401]:   Action: IDLE
+[11:14:24][D][climate:404]:   Fan Mode: AUTO
+[11:14:24][D][climate:416]:   Swing Mode: OFF
+[11:14:24][D][climate:419]:   Current Temperature: 24.80°C
+[11:14:24][D][climate:425]:   Target Temperature: 24.00°C
+[11:14:26][D][sensor:103]: 'Living Room Temperature Sensor': Sending state 76.82000  with 1 decimals of accuracy
+[11:14:26][I][pioneer.climate:075]: State changed at 3: 0x3 -> 0x4
+[11:14:26][I][pioneer.climate:081]: Response: BB.01.00.04.37.04.00.32.88.00.80.00.00.00.00.00.00.70.2B.08.00.00.00.00.00.00.00.00.00.00.75.FF.42.00.57.32.30.30.00.00.80.00.00.00.00.EF.00.00.00.04.40.00.00.00.00.7A.00.00.00.00.18 (61)
+[11:14:26][D][sensor:103]: 'Indoor Fan Speed': Sending state 87.00000  with 0 decimals of accuracy
+[11:14:28][I][pioneer.climate:075]: State changed at 17: 0x70 -> 0x73
+[11:14:28][I][pioneer.climate:081]: Response: BB.01.00.04.37.04.00.32.88.00.80.00.00.00.00.00.00.73.23.08.00.00.00.00.00.00.00.00.00.00.75.FF.42.00.57.32.30.30.00.00.80.00.00.00.00.EF.00.00.00.04.40.00.00.00.00.7A.00.00.00.00.13 (61)
+[11:14:28][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[11:14:28][D][climate:399]:   Mode: FAN_ONLY
+[11:14:28][D][climate:401]:   Action: IDLE
+[11:14:28][D][climate:404]:   Fan Mode: AUTO
+[11:14:28][D][climate:416]:   Swing Mode: OFF
+[11:14:28][D][climate:419]:   Current Temperature: 26.00°C
+[11:14:28][D][climate:425]:   Target Temperature: 24.00°C
+[11:14:30][I][pioneer.climate:075]: State changed at 17: 0x73 -> 0x70
+[11:14:30][I][pioneer.climate:081]: Response: BB.01.00.04.37.04.00.32.88.00.80.00.00.00.00.00.00.70.2B.08.00.00.00.00.00.00.00.00.00.00.75.FF.42.00.57.32.30.30.00.00.80.00.00.00.00.EF.00.00.00.04.40.00.00.00.00.7A.00.00.00.00.18 (61)
+[11:14:30][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[11:14:30][D][climate:399]:   Mode: FAN_ONLY
+[11:14:30][D][climate:401]:   Action: IDLE
+[11:14:30][D][climate:404]:   Fan Mode: AUTO
+[11:14:30][D][climate:416]:   Swing Mode: OFF
+[11:14:30][D][climate:419]:   Current Temperature: 24.80°C
+[11:14:30][D][climate:425]:   Target Temperature: 24.00°C
+[11:14:32][I][pioneer.climate:075]: State changed at 17: 0x70 -> 0x73
+[11:14:32][I][pioneer.climate:081]: Response: BB.01.00.04.37.04.00.32.88.00.80.00.00.00.00.00.00.73.23.08.00.00.00.00.00.00.00.00.00.00.75.FF.42.00.57.32.30.30.00.00.80.00.00.00.00.EF.00.00.00.04.40.00.00.00.00.7A.00.00.00.00.13 (61)
+[11:14:32][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[11:14:32][D][climate:399]:   Mode: FAN_ONLY
+[11:14:32][D][climate:401]:   Action: IDLE
+[11:14:32][D][climate:404]:   Fan Mode: AUTO
+[11:14:32][D][climate:416]:   Swing Mode: OFF
+[11:14:32][D][climate:419]:   Current Temperature: 26.00°C
+[11:14:32][D][climate:425]:   Target Temperature: 24.00°C
+[11:14:34][I][pioneer.climate:075]: State changed at 17: 0x73 -> 0x70
+[11:14:34][I][pioneer.climate:081]: Response: BB.01.00.04.37.04.00.32.88.00.80.00.00.00.00.00.00.70.2B.08.00.00.00.00.00.00.00.00.00.00.75.FF.42.00.57.32.30.30.00.00.80.00.00.00.00.EF.00.00.00.04.40.00.00.00.00.7A.00.00.00.00.18 (61)
+[11:14:34][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[11:14:34][D][climate:399]:   Mode: FAN_ONLY
+[11:14:34][D][climate:401]:   Action: IDLE
+[11:14:34][D][climate:404]:   Fan Mode: AUTO
+[11:14:34][D][climate:416]:   Swing Mode: OFF
+[11:14:34][D][climate:419]:   Current Temperature: 24.80°C
+[11:14:34][D][climate:425]:   Target Temperature: 24.00°C
+[11:14:36][I][pioneer.climate:075]: State changed at 17: 0x70 -> 0x73
+[11:14:36][I][pioneer.climate:081]: Response: BB.01.00.04.37.04.00.32.88.00.80.00.00.00.00.00.00.73.23.08.00.00.00.00.00.00.00.00.00.00.75.FF.42.00.59.32.30.30.00.00.80.00.00.00.00.EF.00.00.00.04.40.00.00.00.00.7A.00.00.00.00.1D (61)
+[11:14:36][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[11:14:36][D][climate:399]:   Mode: FAN_ONLY
+[11:14:36][D][climate:401]:   Action: IDLE
+[11:14:36][D][climate:404]:   Fan Mode: AUTO
+[11:14:36][D][climate:416]:   Swing Mode: OFF
+[11:14:36][D][climate:419]:   Current Temperature: 26.00°C
+[11:14:36][D][climate:425]:   Target Temperature: 24.00°C
+[11:14:36][D][sensor:103]: 'Indoor Fan Speed': Sending state 89.00000  with 0 decimals of accuracy
+[11:14:37][D][homeassistant.sensor:024]: 'sensor.living_room_sensor_temperature': Got state 76.64
+[11:14:38][I][pioneer.climate:075]: State changed at 17: 0x73 -> 0x70
+[11:14:38][I][pioneer.climate:081]: Response: BB.01.00.04.37.04.00.32.88.00.80.00.00.00.00.00.00.70.2B.08.00.00.00.00.00.00.00.00.00.00.75.FF.42.00.57.32.30.30.00.00.80.00.00.00.00.EF.00.00.00.04.40.00.00.00.00.7A.00.00.00.00.18 (61)
+[11:14:38][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[11:14:38][D][climate:399]:   Mode: FAN_ONLY
+[11:14:38][D][climate:401]:   Action: IDLE
+[11:14:38][D][climate:404]:   Fan Mode: AUTO
+[11:14:38][D][climate:416]:   Swing Mode: OFF
+[11:14:38][D][climate:419]:   Current Temperature: 24.80°C
+[11:14:38][D][climate:425]:   Target Temperature: 24.00°C
+[11:14:38][D][sensor:103]: 'Indoor Fan Speed': Sending state 87.00000  with 0 decimals of accuracy
+[11:14:39][D][climate:011]: 'Living Room Mini-Split' - Setting
+[11:14:39][D][climate:015]:   Mode: OFF
+[11:14:39][I][pioneer.climate:251]: Already showing target action IDLE
+[11:14:39][I][pioneer.climate:259]: Already in target fan mode AUTO
+[11:14:39][I][pioneer.climate:354]: Already in target swing mode OFF
+[11:14:39][D][pioneer.climate:392]: Already set to target temperature 24.0
+[11:14:39][I][pioneer.climate:495]: Send: BB.00.01.03.1D.00.00.40.00.57.00.00.80.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.80.B3 (35)
+[11:14:39][D][homeassistant.sensor:024]: 'sensor.living_room_sensor_temperature': Got state 76.82
+[11:14:40][D][pioneer.climate:103]: Waiting on busy state to clear, 2 cycles left
+[11:14:42][D][pioneer.climate:103]: Waiting on busy state to clear, 1 cycles left
+[11:14:43][D][homeassistant.sensor:024]: 'sensor.living_room_sensor_temperature': Got state 76.64
+[11:14:44][I][pioneer.climate:075]: State changed at 17: 0x70 -> 0x73
+[11:14:44][I][pioneer.climate:081]: Response: BB.01.00.04.37.04.00.32.88.00.80.00.00.00.00.00.00.73.23.08.00.00.00.00.00.00.00.00.00.00.75.FF.42.00.57.32.30.30.00.00.80.00.00.00.00.EF.00.00.00.04.40.00.00.00.00.7A.00.00.00.00.13 (61)
+[11:14:44][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[11:14:44][D][climate:399]:   Mode: OFF
+[11:14:44][D][climate:401]:   Action: IDLE
+[11:14:44][D][climate:404]:   Fan Mode: AUTO
+[11:14:44][D][climate:416]:   Swing Mode: OFF
+[11:14:44][D][climate:419]:   Current Temperature: 26.00°C
+[11:14:44][D][climate:425]:   Target Temperature: 24.00°C
+[11:14:44][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[11:14:44][D][climate:399]:   Mode: FAN_ONLY
+[11:14:44][D][climate:401]:   Action: IDLE
+[11:14:44][D][climate:404]:   Fan Mode: AUTO
+[11:14:44][D][climate:416]:   Swing Mode: OFF
+[11:14:44][D][climate:419]:   Current Temperature: 26.00°C
+[11:14:44][D][climate:425]:   Target Temperature: 24.00°C
+[11:14:46][I][pioneer.climate:075]: State changed at 17: 0x73 -> 0x70
+[11:14:46][I][pioneer.climate:081]: Response: BB.01.00.04.37.04.00.32.88.00.80.00.00.00.00.00.00.70.2B.08.00.00.00.00.00.00.00.00.00.00.75.FF.42.00.57.32.30.30.00.00.80.00.00.00.00.EF.00.00.00.04.40.00.00.00.00.7A.00.00.00.00.18 (61)
+[11:14:46][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[11:14:46][D][climate:399]:   Mode: FAN_ONLY
+[11:14:46][D][climate:401]:   Action: IDLE
+[11:14:46][D][climate:404]:   Fan Mode: AUTO
+[11:14:46][D][climate:416]:   Swing Mode: OFF
+[11:14:46][D][climate:419]:   Current Temperature: 24.80°C
+[11:14:46][D][climate:425]:   Target Temperature: 24.00°C
+[11:14:50][D][homeassistant.sensor:024]: 'sensor.living_room_sensor_temperature': Got state 76.82
+[11:14:52][I][pioneer.climate:075]: State changed at 17: 0x70 -> 0x73
+[11:14:52][I][pioneer.climate:081]: Response: BB.01.00.04.37.04.00.32.88.00.80.00.00.00.00.00.00.73.23.08.00.00.00.00.00.00.00.00.00.00.75.FF.42.00.57.32.30.30.00.00.80.00.00.00.00.EF.00.00.00.04.40.00.00.00.00.7A.00.00.00.00.13 (61)
+[11:14:52][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[11:14:52][D][climate:399]:   Mode: FAN_ONLY
+[11:14:52][D][climate:401]:   Action: IDLE
+[11:14:52][D][climate:404]:   Fan Mode: AUTO
+[11:14:52][D][climate:416]:   Swing Mode: OFF
+[11:14:52][D][climate:419]:   Current Temperature: 26.00°C
+[11:14:52][D][climate:425]:   Target Temperature: 24.00°C
+[11:14:54][I][pioneer.climate:075]: State changed at 3: 0x4 -> 0x3
+[11:14:54][I][pioneer.climate:075]: State changed at 7: 0x32 -> 0x20
+[11:14:54][I][pioneer.climate:075]: State changed at 17: 0x73 -> 0x70
+[11:14:54][I][pioneer.climate:081]: Response: BB.01.00.03.37.04.00.20.88.00.80.00.00.00.00.00.00.70.2B.08.00.00.00.00.00.00.00.00.00.00.75.FF.42.00.57.32.30.30.00.00.80.00.00.00.00.EF.00.00.00.04.40.00.00.00.00.7A.00.00.00.00.0D (61)
+[11:14:54][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[11:14:54][D][climate:399]:   Mode: FAN_ONLY
+[11:14:54][D][climate:401]:   Action: OFF
+[11:14:54][D][climate:404]:   Fan Mode: AUTO
+[11:14:54][D][climate:416]:   Swing Mode: OFF
+[11:14:54][D][climate:419]:   Current Temperature: 24.80°C
+[11:14:54][D][climate:425]:   Target Temperature: 24.00°C
+[11:14:54][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[11:14:54][D][climate:399]:   Mode: OFF
+[11:14:54][D][climate:401]:   Action: OFF
+[11:14:54][D][climate:404]:   Fan Mode: AUTO
+[11:14:54][D][climate:416]:   Swing Mode: OFF
+[11:14:54][D][climate:419]:   Current Temperature: 24.80°C
+[11:14:54][D][climate:425]:   Target Temperature: 24.00°C
+[11:14:55][D][sensor:103]: 'Living Room AC uptime': Sending state 90248.03125 s with 0 decimals of accuracy
+[11:14:56][D][sensor:103]: 'Living Room Temperature Sensor': Sending state 76.82000  with 1 decimals of accuracy
+[11:14:56][I][pioneer.climate:075]: State changed at 3: 0x3 -> 0x4
+[11:14:56][I][pioneer.climate:081]: Response: BB.01.00.04.37.04.00.20.88.00.80.00.00.00.00.00.00.70.2B.08.00.00.00.00.00.00.00.00.00.00.75.FF.42.00.00.33.30.30.00.00.80.00.00.00.00.EF.00.00.00.04.40.00.00.00.00.7A.00.00.00.00.5C (61)
+[11:14:56][D][sensor:103]: 'Indoor Fan Speed': Sending state 0.00000  with 0 decimals of accuracy
+[11:14:56][D][sensor:103]: 'Outdoor Temperature': Sending state 31.00000 °C with 0 decimals of accuracy
+[11:14:58][D][homeassistant.sensor:024]: 'sensor.living_room_sensor_temperature': Got state 76.64
+[11:14:59][D][sensor:103]: 'Living Room AC wifi signal': Sending state -40.00000 dBm with 0 decimals of accuracy
+
+
+
+[08:02:50.719][D][climate:011]: 'Living Room Mini-Split' - Setting
+[08:02:50.721][D][climate:015]:   Mode: FAN_ONLY
+[08:02:50.721][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[08:02:50.722][D][climate:399]:   Mode: FAN_ONLY
+[08:02:50.723][D][climate:401]:   Action: OFF
+[08:02:50.723][D][climate:404]:   Fan Mode: AUTO
+[08:02:50.726][D][climate:416]:   Swing Mode: OFF
+[08:02:50.726][D][climate:419]:   Current Temperature: 24.80°C
+[08:02:50.726][D][climate:425]:   Target Temperature: 24.50°C
+[08:02:50.731][D][binary_sensor:039]: 'Update Pending': New state is ON
+[08:02:50.731][I][pioneer.climate:308]: Already showing target action OFF
+[08:02:50.731][I][pioneer.climate:316]: Already in target fan mode AUTO
+[08:02:50.732][I][pioneer.climate:411]: Already in target swing mode OFF
+[08:02:50.737][D][pioneer.climate:449]: Already set to target temperature 24.5
+[08:02:50.738][I][pioneer.climate:552]: Send: BB.00.01.03.1D.00.00.44.07.57.00.04.80.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.80.B4 (35)
+[08:02:50.780][W][component:443]: api took a long time for an operation (64 ms)
+[08:02:50.780][W][component:446]: Components should block for at most 30 ms
+[08:02:51.222][D][pioneer.climate:117]: Waiting on busy state to clear, 2 cycles left
+[08:02:53.150][D][pioneer.climate:117]: Waiting on busy state to clear, 1 cycles left
+[08:02:55.165][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[08:02:55.165][D][climate:399]:   Mode: OFF
+[08:02:55.165][D][climate:401]:   Action: OFF
+[08:02:55.169][D][climate:404]:   Fan Mode: AUTO
+[08:02:55.169][D][climate:416]:   Swing Mode: OFF
+[08:02:55.169][D][climate:419]:   Current Temperature: 24.80°C
+[08:02:55.172][D][climate:425]:   Target Temperature: 24.50°C
+[08:02:56.018][D][sensor:131]: 'Living Room Temperature Sensor': Sending state 77.54000  with 1 decimals of accuracy
+[08:02:57.165][I][pioneer.climate:075]: State changed at 3: 0x4 -> 0x3
+[08:02:57.169][I][pioneer.climate:075]: State changed at 7: 0x21 -> 0x32
+[08:02:57.169][I][pioneer.climate:081]: Response: BB.01.00.03.37.04.00.32.88.01.80.00.00.00.00.00.00.70.0B.08.00.00.00.00.00.00.00.00.00.00.69.FF.42.00.00.2B.2B.2A.00.00.80.00.00.00.00.EE.00.00.00.04.40.00.00.00.00.7A.00.00.00.00.6C (61)
+[08:02:57.169][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[08:02:57.169][D][climate:399]:   Mode: OFF
+[08:02:57.170][D][climate:401]:   Action: IDLE
+[08:02:57.170][D][climate:404]:   Fan Mode: AUTO
+[08:02:57.171][D][climate:416]:   Swing Mode: OFF
+[08:02:57.175][D][climate:419]:   Current Temperature: 24.80°C
+[08:02:57.176][D][climate:425]:   Target Temperature: 24.50°C
+[08:02:57.180][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[08:02:57.180][D][climate:399]:   Mode: FAN_ONLY
+[08:02:57.181][D][climate:401]:   Action: IDLE
+[08:02:57.181][D][climate:404]:   Fan Mode: AUTO
+[08:02:57.183][D][climate:416]:   Swing Mode: OFF
+[08:02:57.183][D][climate:419]:   Current Temperature: 24.80°C
+[08:02:57.184][D][climate:425]:   Target Temperature: 24.50°C
+[08:02:59.167][I][pioneer.climate:075]: State changed at 3: 0x3 -> 0x4
+[08:02:59.167][I][pioneer.climate:081]: Response: BB.01.00.04.37.04.00.32.88.01.80.00.00.00.00.00.00.70.0B.08.00.00.00.00.00.00.00.00.00.00.69.FF.42.00.57.2B.2B.2A.00.00.80.00.00.00.00.EE.00.00.00.04.40.00.00.00.00.7A.00.00.00.00.3C (61)
+[08:02:59.167][D][binary_sensor:039]: 'Update Pending': New state is OFF
+[08:02:59.168][D][sensor:131]: 'Indoor Fan Speed': Sending state 87.00000  with 0 decimals of accuracy
+[08:03:11.178][D][sensor:131]: 'Indoor Fan Speed': Sending state 89.00000  with 0 decimals of accuracy
+[08:03:13.181][D][sensor:131]: 'Indoor Fan Speed': Sending state 87.00000  with 0 decimals of accuracy
+[08:03:19.601][D][climate:011]: 'Living Room Mini-Split' - Setting
+[08:03:19.602][D][climate:015]:   Mode: OFF
+[08:03:19.603][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[08:03:19.603][D][climate:399]:   Mode: OFF
+[08:03:19.603][D][climate:401]:   Action: IDLE
+[08:03:19.603][D][climate:404]:   Fan Mode: AUTO
+[08:03:19.604][D][climate:416]:   Swing Mode: OFF
+[08:03:19.606][D][climate:419]:   Current Temperature: 24.80°C
+[08:03:19.606][D][climate:425]:   Target Temperature: 24.50°C
+[08:03:19.610][D][binary_sensor:039]: 'Update Pending': New state is ON
+[08:03:19.611][I][pioneer.climate:308]: Already showing target action IDLE
+[08:03:19.612][I][pioneer.climate:316]: Already in target fan mode AUTO
+[08:03:19.612][I][pioneer.climate:411]: Already in target swing mode OFF
+[08:03:19.617][D][pioneer.climate:449]: Already set to target temperature 24.5
+[08:03:19.619][I][pioneer.climate:552]: Send: BB.00.01.03.1D.00.00.40.00.57.00.04.80.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.00.80.B7 (35)
+[08:03:21.229][D][pioneer.climate:117]: Waiting on busy state to clear, 2 cycles left
+[08:03:22.800][I][safe_mode:042]: Boot seems successful; resetting boot loop counter
+[08:03:22.810][D][esp32.preferences:143]: Writing 1 items: 0 cached, 1 written, 0 failed
+[08:03:23.182][D][pioneer.climate:117]: Waiting on busy state to clear, 1 cycles left
+[08:03:24.197][D][sensor:131]: 'Living Room AC uptime': Sending state 61.48300 s with 0 decimals of accuracy
+[08:03:25.222][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[08:03:25.222][D][climate:399]:   Mode: FAN_ONLY
+[08:03:25.222][D][climate:401]:   Action: IDLE
+[08:03:25.222][D][climate:404]:   Fan Mode: AUTO
+[08:03:25.222][D][climate:416]:   Swing Mode: OFF
+[08:03:25.222][D][climate:419]:   Current Temperature: 24.80°C
+[08:03:25.222][D][climate:425]:   Target Temperature: 24.50°C
+[08:03:26.041][D][sensor:131]: 'Living Room Temperature Sensor': Sending state 77.54000  with 1 decimals of accuracy
+[08:03:27.167][D][sensor:131]: 'Living Room AC wifi signal': Sending state -43.00000 dBm with 0 decimals of accuracy
+[08:03:27.197][D][binary_sensor:039]: 'Update Pending': New state is OFF
+[08:03:29.214][I][pioneer.climate:075]: State changed at 3: 0x4 -> 0x3
+[08:03:29.214][I][pioneer.climate:075]: State changed at 7: 0x32 -> 0x20
+[08:03:29.214][I][pioneer.climate:075]: State changed at 9: 0x1 -> 0x0
+[08:03:29.214][I][pioneer.climate:081]: Response: BB.01.00.03.37.04.00.20.88.00.80.00.00.00.00.00.00.70.0B.08.00.00.00.00.00.00.00.00.00.00.69.FF.42.00.57.2B.2B.2A.00.00.80.00.00.00.00.EE.00.00.00.04.40.00.00.00.00.7A.00.00.00.00.28 (61)
+[08:03:29.214][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[08:03:29.214][D][climate:399]:   Mode: FAN_ONLY
+[08:03:29.214][D][climate:401]:   Action: OFF
+[08:03:29.214][D][climate:404]:   Fan Mode: AUTO
+[08:03:29.214][D][climate:416]:   Swing Mode: OFF
+[08:03:29.214][D][climate:419]:   Current Temperature: 24.80°C
+[08:03:29.214][D][climate:425]:   Target Temperature: 24.50°C
+[08:03:29.214][D][climate:396]: 'Living Room Mini-Split' - Sending state:
+[08:03:29.222][D][climate:399]:   Mode: OFF
+[08:03:29.227][D][climate:401]:   Action: OFF
+[08:03:29.227][D][climate:404]:   Fan Mode: AUTO
+[08:03:29.233][D][climate:416]:   Swing Mode: OFF
+[08:03:29.233][D][climate:419]:   Current Temperature: 24.80°C
+[08:03:29.235][D][climate:425]:   Target Temperature: 24.00°C
+[08:03:31.265][I][pioneer.climate:075]: State changed at 3: 0x3 -> 0x4
+[08:03:31.266][I][pioneer.climate:081]: Response: BB.01.00.04.37.04.00.20.88.00.80.00.00.00.00.00.00.70.0B.08.00.00.00.00.00.00.00.00.00.00.69.FF.42.00.00.2B.2B.2A.00.00.80.00.00.00.00.EF.00.00.00.04.40.00.00.00.00.7A.00.00.00.00.79 (61)
+[08:03:31.266][D][sensor:131]: 'Indoor Fan Speed': Sending state 0.00000  with 0 decimals of accuracy

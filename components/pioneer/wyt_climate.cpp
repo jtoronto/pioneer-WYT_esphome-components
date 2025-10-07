@@ -105,16 +105,10 @@ bool WytClimate::query_state_(bool read_only) {
       std::abs(this->target_temperature - this->get_setpoint()) < 0.1f) {
     ESP_LOGD(TAG, "State matches requested, clearing pending_ flag.");
     this->pending_ = false;
-    this->force_publish_counter_ = 0; // Reset counter to prevent state bounce
+    
     this->pending_timeout_ = 0;
     if (this->pending_binary_sensor_ != nullptr)
       this->pending_binary_sensor_->publish_state(false);
-
-    // If we were pending a mode change and the target temp was nan, adopt the device's setpoint
-    if (std::isnan(this->target_temperature)) {
-      ESP_LOGD(TAG, "Adopting device setpoint after mode change: %.1f", this->get_setpoint());
-      this->target_temperature = this->get_setpoint();
-    }
   }
   if (this->pending_) {
     ESP_LOGD(TAG, "Pending_ is still true after query, device state not yet matching target.");
@@ -151,16 +145,11 @@ void WytClimate::update() {
       this->pending_ = false;
       if (this->pending_binary_sensor_ != nullptr)
         this->pending_binary_sensor_->publish_state(false);
-      // Now, we let the rest of update() run to refresh the UI with the last known (potentially stale) state.
-      // This is a compromise: it's not UNKNOWN, but it's the best we can do without a dedicated UNKNOWN state.
     }
   }
 
   // Publish updates for the ancillary sensors
   this->update_sensors_();
-
-  // Increment force publish counter
-  this->force_publish_counter_++;
 
   bool changed = false;
   this->update_property_(this->current_temperature, this->get_temperature(), changed);
@@ -173,16 +162,7 @@ void WytClimate::update() {
   this->update_property_(this->custom_fan_mode, this->get_custom_fan_mode(), changed);
 
   if (changed && !this->pending_) {
-    ESP_LOGD(TAG, "Publishing actual state from device (not pending).");
     this->publish_state();
-    this->force_publish_counter_ = 0; // Reset counter after a publish
-  } else if (changed && this->pending_) {
-    ESP_LOGD(TAG, "Skipping publish_state() because changes detected but command is pending.");
-  } else if (!changed && !this->pending_ && this->force_publish_counter_ >= FORCE_PUBLISH_INTERVAL) {
-    // Force publish if no changes, not pending, and interval reached
-    ESP_LOGD(TAG, "Force publishing state (no changes, not pending, interval reached).");
-    this->publish_state();
-    this->force_publish_counter_ = 0; // Reset counter after a publish
   }
 }
 
@@ -250,28 +230,9 @@ void WytClimate::validate_target_temperature() {
 }
 
 void WytClimate::control(const climate::ClimateCall &call) {
-  /* FIXME: Implement this
-  if (call.get_preset().has_value()) {
-    // setup_complete_ blocks modifying/resetting the temps immediately after boot
-    if (this->setup_complete_) {
-      this->change_preset_(*call.get_preset());
-    } else {
-      this->preset = *call.get_preset();
-    }
-  }
-  */
-
-   bool changed = false;
-
-  // Save previous state for comparison
-  auto prev_mode = this->mode;
-  auto prev_fan_mode = this->fan_mode;
-  auto prev_custom_fan_mode = this->custom_fan_mode;
-  auto prev_swing_mode = this->swing_mode;
-  auto prev_target_temp = this->target_temperature;
-
-  if (call.get_mode().has_value())
+  if (call.get_mode().has_value()) {
     this->mode = *call.get_mode();
+  }
   if (call.get_fan_mode().has_value()) {
     this->fan_mode = *call.get_fan_mode();
     this->custom_fan_mode.reset();
@@ -280,29 +241,22 @@ void WytClimate::control(const climate::ClimateCall &call) {
     this->custom_fan_mode = *call.get_custom_fan_mode();
     this->fan_mode.reset();
   }
-  if (call.get_swing_mode().has_value())
+  if (call.get_swing_mode().has_value()) {
     this->swing_mode = *call.get_swing_mode();
+  }
   if (call.get_target_temperature().has_value()) {
     this->target_temperature = *call.get_target_temperature();
-    validate_target_temperature();
   }
 
-  // Optimistically publish state if anything changed
-  if (this->mode != prev_mode ||
-      this->fan_mode != prev_fan_mode ||
-      this->custom_fan_mode != prev_custom_fan_mode ||
-      this->swing_mode != prev_swing_mode ||
-      this->target_temperature != prev_target_temp) {
-    this->publish_state();
-    ESP_LOGD(TAG, "Optimistically publishing state and setting pending_ to true.");
-    this->pending_ = true;
-    this->pending_timeout_ = PENDING_TIMEOUT;
-    if (this->pending_binary_sensor_ != nullptr)
-      this->pending_binary_sensor_->publish_state(true);
+  if (std::isnan(this->target_temperature)) {
+    this->validate_target_temperature();
   }
 
-  // make any changes happen
   this->refresh();
+  this->pending_ = true;
+  this->pending_timeout_ = PENDING_TIMEOUT;
+  if (this->pending_binary_sensor_ != nullptr)
+    this->pending_binary_sensor_->publish_state(true);
 }
 
 climate::ClimateTraits WytClimate::traits() {
