@@ -305,7 +305,7 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
   void refresh();
   void validate_target_temperature();
 
-  bool is_busy() const { return this->busy_ > 0; }
+  bool is_busy() const { return this->uart_busy_; }
   bool is_defrosting() const { return (this->state_.mode == Mode::Heat && !this->state_.heat_mode); }
   climate::ClimateAction get_action();
   optional<std::string> get_custom_fan_mode();
@@ -356,7 +356,7 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
   bool enable_beeper_{false};
   bool enable_display_{true};
 
-  uint8_t busy_{0};
+  bool uart_busy_{false};
   uint8_t command_delay_{2};
 
   // The current state of the extra sensors
