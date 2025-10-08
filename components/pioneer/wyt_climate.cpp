@@ -258,6 +258,8 @@ void WytClimate::control(const climate::ClimateCall &call) {
     validate_target_temperature();
   }
 
+  this->publish_state();
+
   // make any changes happen
   this->refresh();
 }
