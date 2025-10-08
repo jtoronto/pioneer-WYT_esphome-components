@@ -357,7 +357,7 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
   bool enable_display_{true};
 
   bool uart_busy_{false};
-  uint8_t command_delay_{2};
+  uint8_t command_delay_{5};
 
   // The current state of the extra sensors
   bool defrosting_{false};
