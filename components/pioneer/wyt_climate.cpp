@@ -124,6 +124,12 @@ bool WytClimate::query_state_(bool read_only) {
 }
 
 void WytClimate::update() {
+  if (this->ignore_next_update_) {
+    this->ignore_next_update_ = false;
+    ESP_LOGD(TAG, "Ignoring update after command");
+    return;
+  }
+
   if (this->is_busy()) {
     ESP_LOGD(TAG, "Waiting on busy state to clear");
     return;
@@ -542,6 +548,7 @@ void WytClimate::send_command(SetCommand &command) {
   ESP_LOGI(TAG, "Send: %s", format_hex_pretty(command.bytes, WYT_STATE_COMMAND_SIZE).c_str());
   this->write_array(command.bytes, WYT_STATE_COMMAND_SIZE);
   this->flush();
+  this->ignore_next_update_ = true;
   this->uart_busy_ = true;
   this->set_timeout("uart_busy", this->command_delay_ * 1000, [this]() { this->uart_busy_ = false; });
 }
