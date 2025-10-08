@@ -6,6 +6,7 @@
 #include "wyt_climate.h"
 #include "esphome/core/log.h"
 
+#include <string>
 #include <cfloat>
 #include <cmath>
 #include <stdint.h>
@@ -17,6 +18,7 @@ namespace wyt {
 static const char *const TAG = "pioneer.climate";
 
 void WytClimate::setup() {
+
   this->custom_fan_mode.reset();
   this->fan_mode.reset();
 
@@ -33,6 +35,29 @@ void WytClimate::setup() {
   this->swing_mode = this->get_swing_mode();
   this->target_temperature = this->get_setpoint();
   this->current_temperature = this->get_temperature();
+
+  // Log the properties as a string. Use separate branches so we don't mix LogString* and const char* types
+  if (this->fan_mode.has_value()) {
+    const auto *fan_log = climate::climate_fan_mode_to_string(this->fan_mode.value());
+    ESP_LOGD(TAG, "Performing initial setup with properties: mode=%s, action=%s, fan_mode=%s, custom_fan_mode=%s, swing_mode=%s, target_temperature=%.1f, current_temperature=%.1f",
+             climate::climate_mode_to_string(this->mode),
+             climate::climate_action_to_string(this->action),
+             fan_log,
+             this->custom_fan_mode.has_value() ? this->custom_fan_mode.value().c_str() : "none",
+             climate::climate_swing_mode_to_string(this->swing_mode),
+             this->target_temperature,
+             this->current_temperature);
+  } else {
+    ESP_LOGD(TAG, "Performing initial setup with properties: mode=%s, action=%s, fan_mode=%s, custom_fan_mode=%s, swing_mode=%s, target_temperature=%.1f, current_temperature=%.1f",
+             climate::climate_mode_to_string(this->mode),
+             climate::climate_action_to_string(this->action),
+             "none",
+             this->custom_fan_mode.has_value() ? this->custom_fan_mode.value().c_str() : "none",
+             climate::climate_swing_mode_to_string(this->swing_mode),
+             this->target_temperature,
+             this->current_temperature);
+  }
+
 }
 
 bool WytClimate::query_state_(bool read_only) {
@@ -167,6 +192,27 @@ void WytClimate::refresh() {
   this->validate_target_temperature();
   this->switch_to_setpoint_temperature_();
 
+    if (this->fan_mode.has_value()) {
+   const auto *fan_log = climate::climate_fan_mode_to_string(this->fan_mode.value());
+   ESP_LOGD(TAG, "Sending command with properties: mode=%s, action=%s, fan_mode=%s, custom_fan_mode=%s, swing_mode=%s, target_temperature=%.1f, current_temperature=%.1f",
+     climate::climate_mode_to_string(this->mode),
+     climate::climate_action_to_string(this->action),
+     fan_log,
+     this->custom_fan_mode.has_value() ? this->custom_fan_mode.value().c_str() : "none",
+     climate::climate_swing_mode_to_string(this->swing_mode),
+     this->target_temperature,
+     this->current_temperature);
+    } else {
+   ESP_LOGD(TAG, "Sending command with properties: mode=%s, action=%s, fan_mode=%s, custom_fan_mode=%s, swing_mode=%s, target_temperature=%.1f, current_temperature=%.1f",
+     climate::climate_mode_to_string(this->mode),
+     climate::climate_action_to_string(this->action),
+     "none",
+     this->custom_fan_mode.has_value() ? this->custom_fan_mode.value().c_str() : "none",
+     climate::climate_swing_mode_to_string(this->swing_mode),
+     this->target_temperature,
+     this->current_temperature);
+    }
+
   this->send_command(this->command);
 }
 
@@ -185,30 +231,29 @@ void WytClimate::validate_target_temperature() {
 }
 
 void WytClimate::control(const climate::ClimateCall &call) {
-  /* FIXME: Implement this
-  if (call.get_preset().has_value()) {
-    // setup_complete_ blocks modifying/resetting the temps immediately after boot
-    if (this->setup_complete_) {
-      this->change_preset_(*call.get_preset());
-    } else {
-      this->preset = *call.get_preset();
-    }
-  }
-  */
 
-  if (call.get_mode().has_value())
+  ESP_LOGD(TAG, "Control called");
+
+  if (call.get_mode().has_value()) {
+    ESP_LOGD(TAG, "Received mode: %s", climate::climate_mode_to_string(*call.get_mode()));
     this->mode = *call.get_mode();
+  }
   if (call.get_fan_mode().has_value()) {
+    ESP_LOGD(TAG, "Received fan mode: %s", climate::climate_fan_mode_to_string(*call.get_fan_mode()));
     this->fan_mode = *call.get_fan_mode();
     this->custom_fan_mode.reset();
   }
   if (call.get_custom_fan_mode().has_value()) {
+    ESP_LOGD(TAG, "Received custom fan mode: %s", (*call.get_custom_fan_mode()).c_str());
     this->custom_fan_mode = *call.get_custom_fan_mode();
     this->fan_mode.reset();
   }
-  if (call.get_swing_mode().has_value())
+  if (call.get_swing_mode().has_value()) {
+    ESP_LOGD(TAG, "Received swing mode: %s", climate::climate_swing_mode_to_string(*call.get_swing_mode()));
     this->swing_mode = *call.get_swing_mode();
+  }
   if (call.get_target_temperature().has_value()) {
+    ESP_LOGD(TAG, "Received target temperature: %.1f", *call.get_target_temperature());
     this->target_temperature = *call.get_target_temperature();
     validate_target_temperature();
   }
