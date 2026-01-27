@@ -46,7 +46,7 @@ void WytClimate::setup() {
              climate::climate_mode_to_string(this->mode),
              climate::climate_action_to_string(this->action),
              fan_log,
-             this->custom_fan_mode.has_value() ? this->custom_fan_mode.value().c_str() : "none",
+             this->has_custom_fan_mode() ? this->get_custom_fan_mode().c_str() : "none",
              climate::climate_swing_mode_to_string(this->swing_mode),
              this->target_temperature,
              this->current_temperature);
@@ -55,7 +55,7 @@ void WytClimate::setup() {
              climate::climate_mode_to_string(this->mode),
              climate::climate_action_to_string(this->action),
              "none",
-             this->custom_fan_mode.has_value() ? this->custom_fan_mode.value().c_str() : "none",
+             this->has_custom_fan_mode() ? this->get_custom_fan_mode().c_str() : "none",
              climate::climate_swing_mode_to_string(this->swing_mode),
              this->target_temperature,
              this->current_temperature);
@@ -246,7 +246,7 @@ void WytClimate::refresh() {
      climate::climate_mode_to_string(this->mode),
      climate::climate_action_to_string(this->action),
      fan_log,
-     this->custom_fan_mode.has_value() ? this->custom_fan_mode.value().c_str() : "none",
+     this->has_custom_fan_mode() ? this->get_custom_fan_mode().c_str() : "none",
      climate::climate_swing_mode_to_string(this->swing_mode),
      this->target_temperature,
      this->current_temperature);
@@ -255,7 +255,7 @@ void WytClimate::refresh() {
      climate::climate_mode_to_string(this->mode),
      climate::climate_action_to_string(this->action),
      "none",
-     this->custom_fan_mode.has_value() ? this->custom_fan_mode.value().c_str() : "none",
+     this->has_custom_fan_mode() ? this->get_custom_fan_mode().c_str() : "none",
      climate::climate_swing_mode_to_string(this->swing_mode),
      this->target_temperature,
      this->current_temperature);
