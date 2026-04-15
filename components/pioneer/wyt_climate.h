@@ -7,6 +7,7 @@
 #include "esphome/components/climate/climate.h"
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #include "esphome/components/sensor/sensor.h"
+#include "esphome/components/text_sensor/text_sensor.h"
 
 #ifdef USE_REMOTE_TRANSMITTER
 #include "wyt_remote.h"
@@ -297,6 +298,8 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
   void set_outdoor_fan_speed_sensor(sensor::Sensor *sensor) { this->outdoor_fan_speed_sensor_ = sensor; }
   void set_outdoor_temperature_sensor(sensor::Sensor *sensor) { this->outdoor_sensor_ = sensor; }
   void set_power_sensor(sensor::Sensor *sensor) { this->power_sensor_ = sensor; }
+  void set_pending_command_sensor(binary_sensor::BinarySensor *sensor) { this->pending_command_sensor_ = sensor; }
+  void set_uart_phase_sensor(text_sensor::TextSensor *sensor) { this->uart_phase_sensor_ = sensor; }
 #ifdef USE_REMOTE_TRANSMITTER
   void set_transmitter(remote_base::RemoteTransmitterBase *transmitter) { this->transmitter_ = transmitter; }
 #endif
@@ -423,6 +426,8 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
   sensor::Sensor *outdoor_fan_speed_sensor_{nullptr};
   sensor::Sensor *outdoor_sensor_{nullptr};
   sensor::Sensor *power_sensor_{nullptr};
+  binary_sensor::BinarySensor *pending_command_sensor_{nullptr};
+  text_sensor::TextSensor *uart_phase_sensor_{nullptr};
 
   /* FIXME: Implement or cleanup
   // The set of standard preset configurations this thermostat supports (Eg. AWAY, ECO, etc)

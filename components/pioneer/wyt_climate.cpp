@@ -5,6 +5,7 @@
 
 #include "wyt_climate.h"
 #include "esphome/core/log.h"
+#include "esphome/components/text_sensor/text_sensor.h"
 
 #include <string>
 #include <cfloat>
@@ -161,8 +162,11 @@ bool WytClimate::query_state_(bool read_only) {
   }
 
   // 4. Target Temperature (Setpoint Whole + Half)
-  if (new_state.setpoint_whole != old_state.setpoint_whole ||
-      new_state.setpoint_half_digit != old_state.setpoint_half_digit) {
+  // Don't update target_temperature when AC is OFF - preserve user's intended setting
+  if (!this->state_.power) {
+    ESP_LOGD(TAG, "AC is OFF, preserving target temperature %.1f", this->target_temperature);
+  } else if (new_state.setpoint_whole != old_state.setpoint_whole ||
+             new_state.setpoint_half_digit != old_state.setpoint_half_digit) {
     changed = true;
     this->update_property_(this->target_temperature, this->get_setpoint(), changed);
   }
@@ -179,7 +183,6 @@ bool WytClimate::query_state_(bool read_only) {
 
 void WytClimate::update() {
   if (this->ignore_next_update_) {
-    this->ignore_next_update_ = false;
     ESP_LOGD(TAG, "Ignoring update after command");
     return;
   }
@@ -204,7 +207,6 @@ template<typename T> void WytClimate::update_property_(T &property, const T &val
 }
 
 void WytClimate::update_sensors_() {
-  // FIXME: Add deduplicators
   if (this->defrost_binary_sensor_ != nullptr) {
     this->defrosting_ = this->is_defrosting();
     this->defrost_binary_sensor_->publish_state(this->defrosting_);
@@ -224,6 +226,18 @@ void WytClimate::update_sensors_() {
   if (this->power_sensor_ != nullptr && this->power_usage_ != this->get_power_usage()) {
     this->power_usage_ = this->get_power_usage();
     this->power_sensor_->publish_state(this->get_power_usage());
+  }
+
+  if (this->pending_command_sensor_ != nullptr) {
+    this->pending_command_sensor_->publish_state(this->uart_busy_);
+  }
+  if (this->uart_phase_sensor_ != nullptr) {
+    static const char* phase_names[] = {"IDLE", "COMMAND_SENT", "TIMEOUT"};
+    uint8_t phase_idx = 0;
+    if (this->uart_busy_) {
+      phase_idx = 1;
+    }
+    this->uart_phase_sensor_->publish_state(phase_names[phase_idx]);
   }
 }
 
@@ -347,11 +361,15 @@ void WytClimate::switch_to_action_(climate::ClimateAction action) {
 }
 
 void WytClimate::switch_to_fan_mode_(climate::ClimateFanMode fan_mode) {
+  ESP_LOGD(TAG, "switch_to_fan_mode_(%s), current pioneer_fan_mode=%s",
+           climate::climate_fan_mode_to_string(fan_mode),
+           climate::climate_fan_mode_to_string(this->get_pioneer_fan_mode().value_or(climate::CLIMATE_FAN_AUTO)));
   if (fan_mode == this->get_pioneer_fan_mode()) {
     ESP_LOGI(TAG, "Already in target fan mode %s", climate::climate_fan_mode_to_string(fan_mode));
     return;
   }
 
+  ESP_LOGD(TAG, "Changing fan speed to %s", climate::climate_fan_mode_to_string(fan_mode));
   this->command.mute = false;
   this->command.turbo = false;
   switch (fan_mode) {
@@ -482,10 +500,7 @@ void WytClimate::switch_to_swing_mode_(climate::ClimateSwingMode swing_mode) {
 }
 
 void WytClimate::switch_to_setpoint_temperature_() {
-  if (this->target_temperature == this->get_setpoint()) {
-    ESP_LOGD(TAG, "Already set to target temperature %.1f", this->target_temperature);
-    return;
-  }
+  ESP_LOGD(TAG, "Setting target temperature to %.1f", this->target_temperature);
   this->set_temperature_(command, this->target_temperature);
 }
 
@@ -591,7 +606,10 @@ void WytClimate::send_command(SetCommand &command) {
   this->flush();
   this->ignore_next_update_ = true;
   this->uart_busy_ = true;
-  this->set_timeout("uart_busy", this->command_delay_ * 1000, [this]() { this->uart_busy_ = false; });
+  this->set_timeout("uart_busy", this->command_delay_ * 1000, [this]() {
+    this->uart_busy_ = false;
+    this->ignore_next_update_ = false;
+  });
 }
 
 StateResponse WytClimate::response_from_bytes(const uint8_t buffer[WYT_QUERY_RESPONSE_SIZE]) {
