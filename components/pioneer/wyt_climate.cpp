@@ -40,7 +40,7 @@ void WytClimate::setup() {
   this->target_temperature = this->get_setpoint();
   this->current_temperature = this->get_temperature();
 
-  // Log the properties as a string. Use separate branches so we don't mix LogString* and const char* types
+  this->set_supported_custom_fan_modes({"Medium-Low", "Medium-High", "Turbo"});
   if (this->fan_mode.has_value()) {
     const auto *fan_log = climate::climate_fan_mode_to_string(this->fan_mode.value());
     ESP_LOGD(TAG, "Performing initial setup with properties: mode=%s, action=%s, fan_mode=%s, custom_fan_mode=%s, swing_mode=%s, target_temperature=%.1f, current_temperature=%.1f",
@@ -339,7 +339,6 @@ climate::ClimateTraits WytClimate::traits() {
   traits.add_supported_fan_mode(climate::CLIMATE_FAN_MEDIUM);
   traits.add_supported_fan_mode(climate::CLIMATE_FAN_HIGH);
   traits.add_supported_fan_mode(climate::CLIMATE_FAN_QUIET);
-  traits.set_supported_custom_fan_modes({"Medium-Low", "Medium-High", "Turbo"});
 
   traits.add_supported_swing_mode(climate::CLIMATE_SWING_BOTH);
   traits.add_supported_swing_mode(climate::CLIMATE_SWING_HORIZONTAL);
