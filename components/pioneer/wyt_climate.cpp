@@ -605,7 +605,9 @@ void WytClimate::send_command(SetCommand &command) {
   this->flush();
   this->ignore_next_update_ = true;
   this->uart_busy_ = true;
+  ESP_LOGD(TAG, "uart_busy_ set to TRUE, command_delay_=%ds", this->command_delay_);
   this->set_timeout("uart_busy", this->command_delay_ * 1000, [this]() {
+    ESP_LOGD(TAG, "uart_busy_ timeout expired, clearing");
     this->uart_busy_ = false;
     this->ignore_next_update_ = false;
   });
