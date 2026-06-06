@@ -184,11 +184,13 @@ bool WytClimate::query_state_(bool read_only) {
 void WytClimate::update() {
   if (this->ignore_next_update_) {
     ESP_LOGD(TAG, "Ignoring update after command");
+    this->update_sensors_();
     return;
   }
 
   if (this->is_busy()) {
     ESP_LOGD(TAG, "Waiting on busy state to clear");
+    this->update_sensors_();
     return;
   }
 
@@ -245,7 +247,6 @@ void WytClimate::refresh() {
   this->command = this->command_from_response(this->state_);
 
   this->switch_to_mode_(this->mode);
-  this->switch_to_action_(this->action);
   if (this->has_custom_fan_mode())
     this->switch_to_custom_fan_mode_(this->get_custom_fan_mode());
   else if (this->fan_mode.has_value())
@@ -316,6 +317,29 @@ void WytClimate::control(const climate::ClimateCall &call) {
     ESP_LOGD(TAG, "Received target temperature: %.1f", *call.get_target_temperature());
     this->target_temperature = *call.get_target_temperature();
     validate_target_temperature();
+  }
+
+  // Set optimistic action so publish_state() reflects the intended state immediately,
+  // rather than showing the stale action from the last poll cycle.
+  switch (this->mode) {
+    case climate::CLIMATE_MODE_OFF:
+      this->action = climate::CLIMATE_ACTION_OFF;
+      break;
+    case climate::CLIMATE_MODE_COOL:
+      this->action = climate::CLIMATE_ACTION_COOLING;
+      break;
+    case climate::CLIMATE_MODE_HEAT:
+      this->action = climate::CLIMATE_ACTION_HEATING;
+      break;
+    case climate::CLIMATE_MODE_DRY:
+      this->action = climate::CLIMATE_ACTION_DRYING;
+      break;
+    case climate::CLIMATE_MODE_FAN_ONLY:
+      this->action = climate::CLIMATE_ACTION_FAN;
+      break;
+    default:
+      this->action = climate::CLIMATE_ACTION_IDLE;
+      break;
   }
 
   this->publish_state();
