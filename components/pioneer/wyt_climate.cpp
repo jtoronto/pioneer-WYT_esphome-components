@@ -162,9 +162,17 @@ bool WytClimate::query_state_(bool read_only) {
   }
 
   // 4. Target Temperature (Setpoint Whole + Half)
-  // Don't update target_temperature when AC is OFF - preserve user's intended setting
+  // Don't update target_temperature when AC is OFF - preserve user's intended setting.
+  // Exception: if it's still NaN from an uninitialized first-boot, read the AC's
+  // stored setpoint anyway.
   if (!this->state_.power) {
-    ESP_LOGD(TAG, "AC is OFF, preserving target temperature %.1f", this->target_temperature);
+    if (std::isnan(this->target_temperature)) {
+      this->target_temperature = this->get_setpoint();
+      changed = true;
+      ESP_LOGD(TAG, "AC OFF, initialized target temperature from AC: %.1f", this->target_temperature);
+    } else {
+      ESP_LOGD(TAG, "AC is OFF, preserving target temperature %.1f", this->target_temperature);
+    }
   } else if (new_state.setpoint_whole != old_state.setpoint_whole ||
              new_state.setpoint_half_digit != old_state.setpoint_half_digit) {
     changed = true;
