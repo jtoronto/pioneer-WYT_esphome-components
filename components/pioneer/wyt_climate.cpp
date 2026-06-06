@@ -297,7 +297,10 @@ void WytClimate::control(const climate::ClimateCall &call) {
 
   ESP_LOGD(TAG, "Control called");
 
-  if (call.get_mode().has_value()) {
+  bool mode_changed = call.get_mode().has_value();
+  bool temp_changed = call.get_target_temperature().has_value();
+
+  if (mode_changed) {
     ESP_LOGD(TAG, "Received mode: %s", climate::climate_mode_to_string(*call.get_mode()));
     this->mode = *call.get_mode();
   }
@@ -313,10 +316,20 @@ void WytClimate::control(const climate::ClimateCall &call) {
     ESP_LOGD(TAG, "Received swing mode: %s", climate::climate_swing_mode_to_string(*call.get_swing_mode()));
     this->swing_mode = *call.get_swing_mode();
   }
-  if (call.get_target_temperature().has_value()) {
+  if (temp_changed) {
     ESP_LOGD(TAG, "Received target temperature: %.1f", *call.get_target_temperature());
     this->target_temperature = *call.get_target_temperature();
     validate_target_temperature();
+  }
+
+  // If the AC is OFF and only the temperature changed, the AC almost certainly
+  // won't accept/store a temperature command sent with power=off. Just store
+  // the value locally — it will be applied when refresh() runs on the next
+  // mode change (turn-on).  Avoids a misleading optimistic publish and an
+  // unnecessary UART command that blocks the bus for 5 seconds.
+  if (!mode_changed && temp_changed && this->mode == climate::CLIMATE_MODE_OFF) {
+    ESP_LOGD(TAG, "AC OFF: stored target temperature %.1f locally (no command)", this->target_temperature);
+    return;
   }
 
   // Set optimistic action so publish_state() reflects the intended state immediately,
