@@ -11,4 +11,8 @@
 __pycache__
 notes.txt
 .vscode
-added to .gitignore
+
+oh-my-openagent.json
+.sisyphus
+
+logs
