@@ -406,6 +406,13 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
   void switch_to_setpoint_temperature_();
   void set_temperature_(SetCommand &command, const float temp_c);
 
+  // Reconcile the local commanded mode with the actual AC state
+  // after a command delay has expired and a fresh poll completes.
+  // Corrects the mode/action if the AC didn't follow the command
+  // (e.g., intermittent UART failure), breaking the deadlock where
+  // HA shows off but the AC is still running.
+  void reconcile_mode_();
+
   // Get the current state of the climate device
   bool query_state_(bool read_only = false);
 

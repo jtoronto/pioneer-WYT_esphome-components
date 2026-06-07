@@ -205,8 +205,27 @@ void WytClimate::update() {
   if (!this->query_state_())
     ESP_LOGE(TAG, "Status query timed out");
 
+  // After the command delay has expired and we have a fresh reading
+  // of the AC's actual state, check if the local mode matches what
+  // the AC is actually doing. If not (intermittent UART failure),
+  // correct to the real AC state so HA and the automation can
+  // respond appropriately instead of deadlocking.
+  this->reconcile_mode_();
+
   // Publish updates for the ancillary sensors
   this->update_sensors_();
+}
+
+void WytClimate::reconcile_mode_() {
+  climate::ClimateMode actual_mode = this->get_mode();
+  if (this->mode != actual_mode) {
+    ESP_LOGW(TAG, "Mode mismatch: local=%s, AC=%s. Correcting to AC state.",
+             climate::climate_mode_to_string(this->mode),
+             climate::climate_mode_to_string(actual_mode));
+    this->mode = actual_mode;
+    this->action = this->get_action();
+    this->publish_state();
+  }
 }
 
 template<typename T> void WytClimate::update_property_(T &property, const T &value, bool &flag) {
