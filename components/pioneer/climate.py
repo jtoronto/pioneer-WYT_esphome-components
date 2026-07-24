@@ -95,6 +95,7 @@ CONFIG_SCHEMA = cv.All(
 )
 
 RemoteTempAction = pioneer_wyt_ns.class_("RemoteTempAction", automation.Action)
+FollowMeOffAction = pioneer_wyt_ns.class_("FollowMeOffAction", automation.Action)
 DisplayToggleAction = pioneer_wyt_ns.class_("DisplayToggleAction", automation.Action)
 BeeperOnAction = pioneer_wyt_ns.class_("BeeperOnAction", automation.Action)
 BeeperOffAction = pioneer_wyt_ns.class_("BeeperOffAction", automation.Action)
@@ -147,6 +148,15 @@ async def remote_temp_to_code(var, config, args):
     cg.add(var.set_beeper(template_))
     template_ = await cg.templatable(config[CONF_TEMPERATURE], args, cg.float_)
     cg.add(var.set_temperature(template_))
+
+
+@register_action(
+    "follow_me_off",
+    FollowMeOffAction,
+    cv.Schema({}),
+)
+async def follow_me_off_to_code(var, config, args):
+    pass
 
 
 @register_action(

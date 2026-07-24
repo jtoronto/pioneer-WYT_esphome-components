@@ -896,6 +896,11 @@ void WytClimate::do_remote_temp(float temp_c, bool beeper) {
 
   general_command.remote_temp = static_cast<uint8_t>(round(temp_c));
   general_command.beeper = this->enable_beeper_ || beeper;
+  // Pioneer remote sets the follow_me flag (byte 6, bit 7) whenever it transmits
+  // a remote temp reading. Without this, the AC ignores the remote_temp byte
+  // and only beeps in acknowledgement. temp_c == 0 means "turn follow-me off",
+  // matching pioneer-follow-off.sr.txt.
+  general_command.follow_me = (general_command.remote_temp != 0);
 
   remote_base::PioneerWytData fan_data(
       std::vector<uint8_t>(fan_command.bytes, fan_command.bytes + WYT_REMOTE_COMMAND_SIZE));
@@ -915,7 +920,8 @@ void WytClimate::do_remote_temp(float temp_c, bool beeper) {
   remote_base::PioneerWytProtocol().encode(transmit.get_data(), general_data);
   transmit.perform();
 
-  ESP_LOGD(TAG, "Remote temp action called with: %0.1f °C, rounded to: %u °C", temp_c, general_command.remote_temp);
+  ESP_LOGD(TAG, "Remote temp action called with: %0.1f °C, rounded to: %u °C, follow_me: %s",
+           temp_c, general_command.remote_temp, ONOFF(general_command.follow_me));
 #else
   ESP_LOGW(TAG, "Action needs remote_transmitter component");
 #endif
