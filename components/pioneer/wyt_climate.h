@@ -328,6 +328,7 @@ class WytClimate : public climate::Climate, public PollingComponent, public uart
   /* ############### */
 
   void do_remote_temp(float temp_c, bool beeper = false);
+  void do_follow_me_off() { this->do_remote_temp(0.0f, false); }
   void do_display_toggle() {
     this->set_display(!this->enable_display_);
     this->refresh();

@@ -24,6 +24,10 @@ template<typename... Ts> class RemoteTempAction : public PioneerWytActionBase<Ts
   }
 };
 
+template<typename... Ts> class FollowMeOffAction : public PioneerWytActionBase<Ts...> {
+  void play(const Ts &...x) override { this->parent_->do_follow_me_off(); }
+};
+
 template<typename... Ts> class DisplayToggleAction : public PioneerWytActionBase<Ts...> {
  public:
   void play(const Ts &...x) override { this->parent_->do_display_toggle(); }
