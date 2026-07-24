@@ -1,0 +1,33 @@
+Final Verification - ESPHome Logs Check
+=======================================
+Date: 2026-06-06T22:04:01-04:00
+Device: 192.168.1.194 (livingroomminisplit)
+
+Results:
+--------
+✅ custom_components deprecation warning: ELIMINATED (no longer appears)
+✅ docker-compose.yml version deprecation: ELIMINATED (no longer appears)
+⏳ synchronous= warnings: Still present — requires push to GitHub + reflash
+⏳ ESP32 chip revision / SRAM1 hints: Still present — requires reflash with new config
+
+Root Cause:
+-----------
+The ESPHome Docker container pulls components from GitHub:
+  source: github://jtoronto/pioneer-WYT_esphome-components@improvements
+
+The local changes have been committed but NOT pushed to GitHub yet.
+The device is still running the OLD firmware (compiled 2026-06-06 17:36:55).
+
+Next Steps:
+-----------
+1. Push changes to GitHub: git push origin improvements
+2. Recompile and flash: esphome run living-room-mini-split.yaml
+3. Re-verify: esphome logs living-room-mini-split.yaml --device 192.168.1.194
+
+Changes Made:
+-------------
+- components/pioneer/climate.py: Added synchronous=True to register_action wrapper
+- components/remote_base/__init__.py: Added synchronous=True to register_action wrapper
+- docker-compose.yml: Removed deprecated version: '3' line
+- config/custom_components/pioneer/: Deleted leftover directory
+- config/living-room-mini-split.yaml: Added esp32.framework.advanced settings

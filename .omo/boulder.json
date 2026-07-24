@@ -1,0 +1,23 @@
+{
+  "active_plan": "/Users/joey/Development/Home Automation/Pioneer WYT/pioneer-WYT_esphome-components/.sisyphus/plans/fix-esphome-warnings.md",
+  "started_at": "2026-06-06T22:01:32.990Z",
+  "session_ids": [
+    "ses_1611dc290ffe1573NPQ68vabNX"
+  ],
+  "session_origins": {
+    "ses_1611dc290ffe1573NPQ68vabNX": "direct"
+  },
+  "plan_name": "fix-esphome-warnings",
+  "agent": "atlas",
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "Add `synchronous=True` to Pioneer component register_action wrapper",
+      "session_id": "ses_1610a8935ffezlHyNOC3wncdGx",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-06-06T22:02:52.723Z"
+    }
+  }
+}
