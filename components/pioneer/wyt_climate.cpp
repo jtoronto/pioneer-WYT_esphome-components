@@ -834,6 +834,10 @@ IrFanCommand WytClimate::get_fan_command_from_state() {
   command.mute = this->state_.mute;  // AKA silent mode
   command.horizontal_swing = this->state_.horizontal_flow ? IrSwing::On : IrSwing::Off;
   command.vertical_swing = this->state_.vertical_flow ? IrSwing::On : IrSwing::Off;
+  // Every FAN message captured from the factory remote has byte 8 = 0xC0 as a
+  // constant. The Pioneer AC rejects FAN messages with any other value here,
+  // which is why the IR feature never worked.
+  command.unknown5 = 0xC0;
   return command;
 }
 
