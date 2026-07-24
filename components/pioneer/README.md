@@ -42,11 +42,10 @@ uart:
   parity: EVEN
 
 # Optional I Feel/Follow Me support via IR transmitter (remote temperature sensor support)
-# This feature is still in an alpha-ish state at the moment. The IR protocol as used by the
-# remote has been fully decoded, but I'm not certain the feature is activated in the unit.
-# Even with the original remote it seems to have no real effect. The temp indicated doesn't
-# change what's shown in the pioneer app and the unit doesn't react aside from a beep
-# acknowledging the IR command was received.
+# The IR protocol has been fully reverse-engineered and verified to work end-to-end.
+# See ../../../IR_REMOTE_FIX.md for the protocol details and the two bugs that were
+# previously making this feature silently fail (FAN byte 8 constant and missing
+# follow_me flag).
 remote_transmitter:
   pin: # Hardware-dependent
   carrier_duty_percent: 50%
@@ -60,7 +59,10 @@ sensor:
             # Requires conversion from fahrenheit to celsius (if needed) at the moment
             temperature: !lambda "return fahrenheit_to_celsius(x);"
             # beeper: false
-```
+
+# Optional: explicitly turn off follow-me from any automation:
+#   - pioneer_wyt.follow_me_off
+# Passing `temperature: 0` to `pioneer_wyt.remote_temp` has the same effect.
 
 Thanks to squidpickles' work to reverse engineer the communication protocol:  
 https://github.com/squidpickles/tuya-serial  
