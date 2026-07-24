@@ -1,0 +1,14 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": 
+    ["oh-my-openagent"],
+  "permission": {
+    "external_directory": {
+      "~/Development/**": "allow",
+      "/tmp": "allow"
+    },
+    "edit": {
+      "~/Development/**": "ask"
+    }
+  }
+}
